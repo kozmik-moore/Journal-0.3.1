@@ -22,6 +22,7 @@ from DateModule import *
 import DateTools
 import textwrap
 from GraphTools import *
+import pdb
                 
 class Main(Tk):
     def __init__(self):
@@ -225,11 +226,7 @@ class Main(Tk):
         if self.entry.getDate():
             selection = messagebox.askyesno("Delete Entry", "Delete this entry?")
             if selection:
-                if self.entry.getChild():
-                    for child in self.entry.getChild():
-                        self.journal.getEntry(child).unlinkParent()
-                if self.entry.getParent():
-                    self.journal.getEntry(self.entry.getParent()).unlinkChild(self.entry.getDate())
+                self.jgraph.deleteEntry(self.entry.getDate())
                 self.journal.delete(self.entry)
                 entry = JEntry()
                 self.clearGUI()
@@ -248,7 +245,12 @@ class Main(Tk):
         
     def displayLinks(self):
         if self.entry.getDate():
-            self.jgraph.creatGraphDialog(self.entry.getDate())
+            if not self.entry.getChild() and not self.entry.getParent():
+                message = "No linked entries to display!"
+                main = messagebox.Message(title='Linked Entries', message=message)
+                main.show()
+            else:
+                self.jgraph.creatGraphDialog(self.entry.getDate())
             
         
 app=Main()

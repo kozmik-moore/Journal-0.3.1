@@ -7,12 +7,12 @@ Created on Thu Sep 29 16:45:07 2016
 
 class JEntry:
     def __init__(self, date=None, body=None, tags=None, parent=None):
-        self.date = date
+        self.date = date      #datetime object
         self.body = body
         self.tags = tags
         if not tags:
             self.tags = []
-        self.parent = parent
+        self.parent = parent  #datetime object
         self.child = []
         
     def getDate(self):
@@ -123,6 +123,13 @@ class JObject:
         
     def delete(self, entry):
 #        if entry in self.storage:
+        parent = entry.getParent()
+        if parent:
+            self.getEntry(parent).unlinkChild(entry.getDate())
+        children = entry.getChild()
+        if children:
+            for child in children:
+                self.getEntry(child).unlinkParent()
         del self.storage[entry.getDate()]
         self.population -= 1
         

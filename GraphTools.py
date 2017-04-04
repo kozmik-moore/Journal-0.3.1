@@ -47,6 +47,8 @@ class JGraph:
         self.style.configure('Bold.TButton', font=('Sans', '8', 'bold'), background='black')
         
     def BFS(self, date):
+        self.discovered = {}
+        self.color = {}
         for vertex in self.journal.getAllDates():
             self.color[vertex] = 'white'
             self.discovered[vertex] = INF
@@ -70,6 +72,7 @@ class JGraph:
         self.constructAdjacencies()         ##Inefficient: fix later with 'add' and 'delete'
         self.BFS(date)
         self.height = 0
+#        self.coordinates = {}
         """Compute the height and size of the widest level of the tree"""
         discovered = list(sorted(self.discovered.values()))
         widths = {}
@@ -116,6 +119,7 @@ class JGraph:
         
     def constructAdjacencies(self):
         self.number_vertices = 0
+        self.adjacency = {}
         for date in self.journal.getAllDates():
             self.adjacency[date] = []
             parent = self.journal.getEntry(date).getParent()
