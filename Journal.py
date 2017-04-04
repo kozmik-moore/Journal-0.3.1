@@ -132,7 +132,7 @@ class Main(Tk):
         self.updateGUI(self.entry)
                 
     def createAboutWindow(self):
-        message = "Journal 0.3\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 3 Python Suite"
+        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 4.3.1 Suite (Python 3.6)"
         main = messagebox.Message(title="About", message=message)
         main.show()
         
