@@ -9,7 +9,10 @@ class JEntry:
     def __init__(self, date=None, body=None, tags=None, parent=None):
         self.date = date      #datetime object
         self.body = body
-        self.tags = tags
+        if not tags:
+            self.tags = []
+        else:
+            self.tags = tags
         if not tags:
             self.tags = []
         self.parent = parent  #datetime object

@@ -241,7 +241,7 @@ class Main(Tk):
     def newLink(self):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():
             self.save()
-            self.updateGUI(entry=JEntry(parent=self.entry.getDate()))
+            self.updateGUI(entry=JEntry(parent=self.entry.getDate(), tags=self.entry.getTags()))
         
     def displayLinks(self):
         if self.entry.getDate():
