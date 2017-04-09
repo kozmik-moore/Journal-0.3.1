@@ -16,6 +16,10 @@ import DateTools
 
 INF = -1
 NIL = None
+WIDTH = 450
+HEIGHT = 300
+BUTTON_LENGTH = 300
+BUTTON_HEIGHT = 80
        
 class JGraph:
     def __init__(self, controller, journal):
@@ -99,9 +103,9 @@ class JGraph:
                 piles[self.discovered[date]].append(date)
         """Compute coordinates of each node in the tree"""
         for i in range(0, len(piles)):
+            x_value = -1*(len(piles[i])-1)/2
             for j in range(0, len(piles[i])):
-                self.coordinates[piles[i][j]] = ((j+1)*(self.widest/(len(piles[i])+1)), self.height-i)
-            
+                x_value = x_value+1            
             
     def addEntry(self, date):
         self.adjacency[date] = []
@@ -130,40 +134,57 @@ class JGraph:
     def creatGraphDialog(self, date):
         
         self.findTreeDims(self.getRoot(date))
+        current = date
+        style = Style()
+        style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
         
         self.graph_dialog = Toplevel()
         self.graph_dialog.title('Graph')
         self.graph_dialog.grab_set()
         xbar = Scrollbar(self.graph_dialog, orient=HORIZONTAL)
-        ybar = Scrollbar(self.graph_dialog)
+        ybar = Scrollbar(self.graph_dialog, orient=VERTICAL)
         canvas = Canvas(self.graph_dialog, yscrollcommand=ybar.set, xscrollcommand=xbar.set)
-#        a=200
-#        b=100
-#        canvas.create_line(0,0,a,b)
         xbar.config(command=canvas.xview)
         ybar.config(command=canvas.yview)
-        canvas.pack()
         xbar.pack(side=BOTTOM, fill=X)
         ybar.pack(side=RIGHT, fill=Y)
+        canvas.pack(fill=BOTH, expand=True)
         for date in sorted(self.coordinates):
-            x=self.coordinates[date][0]*250
-            y=self.coordinates[date][1]*75
+            x=self.coordinates[date][0]*BUTTON_LENGTH
+            y=self.coordinates[date][1]*BUTTON_HEIGHT
             if self.journal.getEntry(date).getChild():
                 children = self.journal.getEntry(date).getChild()
                 for child in children:
-                    u = self.coordinates[child][0]*250
-                    v = self.coordinates[child][1]*75
+                    u = self.coordinates[child][0]*BUTTON_LENGTH
+                    v = self.coordinates[child][1]*BUTTON_HEIGHT
                     canvas.create_line(x,y,u,v)
         for date in sorted(self.coordinates):
-            x=self.coordinates[date][0]*250
-            y=self.coordinates[date][1]*75
-            window = canvas.create_window(x,y,height=40, width=150)
-            button=Button(canvas, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
+            x=self.coordinates[date][0]*BUTTON_LENGTH
+            y=self.coordinates[date][1]*BUTTON_HEIGHT
+            window = canvas.create_window(x,y)
+            if current == date:
+                button=Button(canvas, text=DateTools.getDateGUIFormat(date), style='Curr.TButton', command=lambda date=date:self.previewEntry(date))
+            else:
+                button=Button(canvas, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
             canvas.itemconfig(window, window=button)
-#        size = canvas.bbox('all')
-#        width = size[2]-size[0]
-#        height = size[3]-size[1]
-#        canvas.config(width=width, height=height)
+        canvas.config(scrollregion=canvas.bbox(ALL))
+        size = canvas.bbox('all')
+#        print(size)
+        width = size[2]-size[0]
+        height = size[3]-size[1]
+        screen_width = self.graph_dialog.winfo_screenwidth()
+        screen_height = self.graph_dialog.winfo_screenheight()
+        if width > screen_width:
+            width = screen_width
+        if height > screen_height:
+            height = screen_height
+        if width < WIDTH:
+            width = WIDTH
+        if height < HEIGHT:
+            height = HEIGHT
+        dims = str(width)+'x'+str(height)
+        self.graph_dialog.geometry(dims)
+        self.graph_dialog.update_idletasks()
         self.graph_dialog.protocol("WM_DELETE_WINDOW", self.destroyGraphDialog)
         
     def destroyGraphDialog(self):
