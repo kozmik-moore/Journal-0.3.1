@@ -8,8 +8,9 @@ from tkinter import *
 from tkinter.ttk import *
 from JObject import *
 from math import ceil
+from math import sqrt
 from tkinter import messagebox as messagebox
-from tkinter import simpledialog as simpledialog 
+from tkinter import simpledialog as simpledialog
         
         
 class TagsCheckboxManager:
@@ -140,13 +141,18 @@ class TagsCanvas(TagsCheckboxManager):
         
     def createCheckboxDialog(self):
         root = Toplevel()
+        root.title('Tags')
+        s=Style()
+        print(s.theme_names())
+        root.minsize(width=300, height=70)
+        root.maxsize(width=root.winfo_screenwidth(), height=root.winfo_screenheight())
         canvas = Canvas(root, highlightthickness=0)
         tagslist = self.getVarsList()
         if tagslist:
             for tag in tagslist:
                 tagslist[tag][1] = Checkbutton(master=canvas, text=tag, variable=tagslist[tag][0])
             tmp = sorted(tagslist.keys())
-            row = 6
+            row = ceil(sqrt(len(tmp)))
             col = ceil(len(tagslist) / row)
             grid = [(x, y) for x in range(0, col) for y in range(0, row) ]
             for i in range(0, len(tmp)):
@@ -155,7 +161,8 @@ class TagsCanvas(TagsCheckboxManager):
         else:
             message = Message(canvas, text='There is nothing to display.')
             message.pack()
-        canvas.pack()
+        canvas.pack(padx=10, pady=7, side=LEFT)
+        root.grab_set()
         root.protocol("WM_DELETE_WINDOW", lambda window=root:self.updateFromStates(root))
 
     def updateButton(self, button):

@@ -18,7 +18,7 @@ INF = -1
 NIL = None
 WIDTH = 450
 HEIGHT = 300
-BUTTON_LENGTH = 300
+BUTTON_LENGTH = 240
 BUTTON_HEIGHT = 80
        
 class JGraph:
@@ -105,6 +105,7 @@ class JGraph:
         for i in range(0, len(piles)):
             x_value = -1*(len(piles[i])-1)/2
             for j in range(0, len(piles[i])):
+                self.coordinates[piles[i][j]] = (x_value, self.height-i)
                 x_value = x_value+1            
             
     def addEntry(self, date):

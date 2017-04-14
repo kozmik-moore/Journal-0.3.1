@@ -17,6 +17,7 @@ class JEntry:
             self.tags = []
         self.parent = parent  #datetime object
         self.child = []
+        self.attachments = False
         
     def getDate(self):
         return self.date

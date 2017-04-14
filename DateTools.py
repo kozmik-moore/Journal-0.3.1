@@ -17,9 +17,17 @@ MONTHS_ABR_TO_NUM = {'Dec': '12', 'Oct': '10', 'Feb': '02', 'Nov': '11',
 
 
 def getCurrentDate():
-    """Returns a datetime object"""
+    """Returns a datetime object of the current time"""
     return datetime.today()
         
 def getDateGUIFormat(date):
     """Takes a datetime object and returns a string in the format Month Day, Year, H:M:S"""
     return datetime.strftime(date, '%B %d, %Y %H:%M:%S')
+
+def getDateFileStorageFormat(date):
+    """Takes a datetime object and returns a string in the format YYYYMMDDHHMMSS"""
+    return datetime.strftime(date, '%Y%m%d%H%M%S%f')
+
+def createDatetimeObject(string):
+    """Takes a string in the format YYYYMMDDHHMMSS and returns a datetime object"""
+    return datetime.strptime(string, '%Y%m%d%H%M%S%f')
