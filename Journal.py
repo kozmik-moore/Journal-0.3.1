@@ -6,13 +6,8 @@ Created on Tue Sep 20 15:00:50 2016
 """
 from tkinter import *
 from tkinter.ttk import *
-import pickle
 import tkinter.messagebox as messagebox
-from inspect import getsourcefile
-from os.path import abspath
 from tkinter import filedialog as filedialog
-import os
-import pdb
 from JObject import *
 from BodyModules import *
 #from DateFrame import *
@@ -22,6 +17,7 @@ from DateModule import *
 import DateTools
 import textwrap
 from GraphTools import *
+from AttachmentTools import AttachmentManager
 import pdb
                 
 class Main(Tk):
@@ -72,6 +68,9 @@ class Main(Tk):
         else:
             self.entry = JEntry()
 #        self.buffer_entry = None
+
+        self.attachmanager = AttachmentManager(self, self.journal, self.entry)
+        
         self.backup_interval_var = self.storage.getBackupIntervalVar()
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
@@ -80,7 +79,10 @@ class Main(Tk):
         self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, self)
         self.body_frame = BodyFrame(self, self.entry)
         self.tags_frame = TagsFrame(self, self.journal, self.entry)
-        self.options_frame = Frame(self)
+        self.lower_frame = Frame(self)
+        self.lower_left =Frame(self.lower_frame)
+        self.options_frame = Frame(self.lower_frame)
+        self.lower_right = Frame(self.lower_frame)
         
         self.jgraph = JGraph(self, self.journal)
         
@@ -94,14 +96,20 @@ class Main(Tk):
         self.LAST_BACKUP.pack(side=RIGHT)
         self.LAST_BACKUP_LABEL.pack(side=RIGHT)
         
-        self.SAVE = Button(self.options_frame, text="Save", command=self.save).grid(row=0, column=0, columnspan=2)
-        self.LINK = Button(self.options_frame, text="Create Linked Entry", command=self.newLink).grid(row=0, column=2, columnspan=2, sticky=EW)
-        self.NEW = Button(self.options_frame, text="New Entry", command=self.newEntry).grid(row=0, column=4, columnspan=2)
-        self.QUIT = Button(self.options_frame, text="Quit", command=self.destroyApp).grid(row=1, column=0, columnspan=2)
-        self.LINKS = Button(self.options_frame, text="Display Linked Entries", command=self.displayLinks).grid(row=1, column=2, columnspan=2)
-        self.DELETE = Button(self.options_frame, text="Delete", command=self.delete).grid(row=1, column=4)
-#        self.FIX = Button(self.options_frame, text='FIX!', command=self.fixParent).grid(row=1, column=5)
-        self.options_frame.pack(side=TOP)
+        self.lower_left.pack(side=LEFT, expand=True, fill=X)
+        self.options_frame.pack(side=LEFT)
+        self.lower_right.pack(side=LEFT, expand=True, fill=X)
+        self.lower_frame.pack(side=TOP, expand=True, fill=X)
+        
+        self.SAVE = Button(self.options_frame, text="Save", command=self.save).grid(row=0, column=0)
+        self.LINK = Button(self.options_frame, text="Create Linked Entry", command=self.newLink).grid(row=0, column=2, sticky=EW)
+        self.NEW = Button(self.options_frame, text="New Entry", command=self.newEntry).grid(row=0, column=6)
+        self.QUIT = Button(self.options_frame, text="Quit", command=self.destroyApp).grid(row=1, column=0)
+        self.LINKS = Button(self.options_frame, text="Display Linked Entries", command=self.displayLinks).grid(row=1, column=2)
+        self.DELETE = Button(self.options_frame, text="Delete", command=self.delete).grid(row=1, column=6)
+        self.DISPLAY_ATTACHMENTS = Button(self.options_frame, text='View Attachments', command=self.attachmanager.displayAttachments).grid(row=1, column=4)
+        self.ADD_ATTACHMENTS = Button(self.options_frame, text='Add Attachment', command=self.attachmanager.askForAttachment).grid(row=0, column=4, sticky=EW)
+
         
         menubar = Menu(self)
         pref_menu = Menu(menubar, tearoff=0)
@@ -129,7 +137,9 @@ class Main(Tk):
         self.protocol("WM_DELETE_WINDOW", self.destroyApp)
         self.bindDateControl()
         self.storage.runBackup()
-        self.updateGUI(self.entry)
+        self.updateGUI(entry=self.entry)
+        style=Style(self)
+        style.theme_use('winnative')
                 
     def createAboutWindow(self):
         message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 4.3.1 Suite (Python 3.6)"
@@ -152,7 +162,7 @@ class Main(Tk):
         messagebox.showinfo(title='Autosave', message=message)
         
     def updateGUI(self, event=None, entry=None):
-        if not self.body_frame.bodyFieldIsEmpty() and not self.date_frame.getDate():
+        if not self.body_frame.bodyFieldIsEmpty(): # and not self.date_frame.getDate():
             self.save()
         date = self.date_frame.indexDate()
         if entry:
@@ -164,51 +174,53 @@ class Main(Tk):
         self.date_frame.updateGUI(self.entry)
         self.body_frame.updateGUI(self.entry)
         self.tags_frame.updateGUI(self.entry)
+        self.attachmanager.updateGUI(self.entry)
         
     def clearGUI(self):
         self.entry = JEntry()
         self.date_frame.clearGUI(self.entry)
         self.body_frame.clearGUI(self.entry)
-        self.tags_frame.clearGUI(self.entry)       
+        self.tags_frame.clearGUI(self.entry)
+        self.attachmanager.clearGUI(self.entry)
         
     def bindDateControl(self):
         self.date_frame.bindDatebox(self.updateGUI)
         
-    def journalIsChanged(self):
-        if self.storage.journalIsSaved(self.journal):
-            return False
-        else:
-            return True
+#    def journalIsChanged(self):
+#        if self.storage.journalIsSaved(self.journal):
+#            return False
+#        else:
+#            return True
             
-    def entryIsChanged(self):
-        date = self.entry.getDate()
-        storage = self.storage.getJournal()
-        if not date:
-            return True
-        if date in storage.getAllDates():
-            if not storage.getEntry(date).equals(self.entry):
-                return True
-            if self.entry.getBody() != self.body_frame.getBody():
-                return True
-            if self.entry.getTags() != storage.getEntry(date).getTags():
-                return True
-        elif date in self.journal.getAllDates():
-            if self.entry.getBody() != self.body_frame.getBody():
-#            if self.journal.getEntry(date).equals(self.entry):
-                return True
-        return False
+#    def entryIsChanged(self):
+#        date = self.entry.getDate()
+#        storage = self.storage.getJournal()
+#        if not date:
+#            return True
+#        if date in storage.getAllDates():
+#            if not storage.getEntry(date).equals(self.entry):
+#                return True
+#            if self.entry.getBody() != self.body_frame.getBody():
+#                return True
+#            if self.entry.getTags() != storage.getEntry(date).getTags():
+#                return True
+#        elif date in self.journal.getAllDates():
+#            if self.entry.getBody() != self.body_frame.getBody():
+##            if self.journal.getEntry(date).equals(self.entry):
+#                return True
+#        return False
                 
-    def throwSaveWarning(self):
-#        selection = messagebox.askyesno('Save Entry', 'Save before continuing?')
-#        if selection:
-        self.save()
+#    def throwSaveWarning(self):
+##        selection = messagebox.askyesno('Save Entry', 'Save before continuing?')
+##        if selection:
+#        self.save()
             
-    def throwFinalSaveWarning(self):
-        """Needs more thought before fully implementing:
-        leaves filestreams open when 'no' is selected"""
-#        selection = messagebox.askyesno("Save All Changes", "Save all changes before exiting?")
-#        if selection:
-        self.storage.saveJournal(self.journal)
+#    def throwFinalSaveWarning(self):
+#        """Needs more thought before fully implementing:
+#        leaves filestreams open when 'no' is selected"""
+##        selection = messagebox.askyesno("Save All Changes", "Save all changes before exiting?")
+##        if selection:
+#        self.storage.saveJournal(self.journal)
 #        else:
 #            self.storage.closeStreams()
             
@@ -216,6 +228,7 @@ class Main(Tk):
         self.date_frame.save()
         self.body_frame.save()
         self.tags_frame.save()
+        self.attachmanager.save()
         if self.entry.getParent():
             date = self.entry.getParent()
             parent = self.journal.getEntry(date)
@@ -251,6 +264,18 @@ class Main(Tk):
                 main.show()
             else:
                 self.jgraph.creatGraphDialog(self.entry.getDate())
+                
+class JournalStyle(Style):
+    def __init__(self, master):
+        self.style = Style()
+        self.style.theme_use('vista')
+        Style.__init__(master=master)
+        
+    def getStyle(self):
+        return self.style
+    
+    def setStyle(self):
+        None
             
         
 app=Main()

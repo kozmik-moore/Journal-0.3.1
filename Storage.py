@@ -5,18 +5,18 @@ Created on Sun Mar 26 18:18:35 2017
 @author: Kozmik
 """
 
-from os.path import abspath
-import os
+from os import path
+from os import makedirs
+from inspect import getsourcefile
 import pickle
 from tkinter import *
 import DateTools
 from tkinter import filedialog as filedialog
-from inspect import getsourcefile
 from JObject import JObject
 
 class Storage:
     def __init__(self, master=None):
-        self.config_path = abspath(getsourcefile(lambda:0)).strip('Storage.py')
+        self.config_path = path.abspath(getsourcefile(lambda:0)).strip('Storage.py')
         self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 'LAST BACKUP': None, 'BACKUP INTERVAL': 168, 'AUTOSAVE': False}
         self.journal = None
         self.master = master
@@ -74,8 +74,8 @@ class Storage:
         location = filedialog.askdirectory(**self.backup_opt)
         if location != '':
             self.ini['BACKUP LOCATION'] = location + "/Backup/"
-            if not os.path.exists(self.ini['BACKUP LOCATION']):
-                os.makedirs(self.ini['BACKUP LOCATION'])
+            if not path.exists(self.ini['BACKUP LOCATION']):
+                makedirs(self.ini['BACKUP LOCATION'])
             
     def changeBackupSchedule(self):
         self.ini['BACKUP INTERVAL'] = self.backup_interval.get()            

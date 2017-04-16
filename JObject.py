@@ -17,7 +17,7 @@ class JEntry:
             self.tags = []
         self.parent = parent  #datetime object
         self.child = []
-        self.attachments = False
+        self.attachments = []
         
     def getDate(self):
         return self.date
@@ -70,17 +70,28 @@ class JEntry:
     def unlinkChild(self, date):
         self.child.remove(date)
         
-#    def deleteChildren(self):
-#        self.child = []
-#        
-#    def importChildren(self, children):
-#        self.child = children
+    def addAttachment(self, filename):
+        if filename not in self.attachments:
+            self.attachments.append(filename)
+            
+    def deleteAttachment(self, filename):
+        if filename in self.attachments:
+            self.attachments.remove(filename)
+        
+    def getAttachments(self):
+        return self.attachments
         
     def __deepcopy__(self):
         new = JEntry(self.date, self.body, self.tags, self.parent)
         if self.child:
             for date in self.child:
                 new.linkChild(date)
+        try:
+            if self.attachments:
+                for file in self.attachments:
+                    new.addAttachment(file)
+        except AttributeError:
+            self.attachments = []
         return new
         
     def equals(self, entry):
@@ -93,6 +104,8 @@ class JEntry:
         if self.parent != entry.getParent():
             return False
         if self.child != entry.getChild():
+            return False
+        if self.attachments != entry.getAttachments():
             return False
         for tag in self.tags:
             if tag not in entry.getTags():
