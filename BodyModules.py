@@ -18,7 +18,7 @@ class BodyFrame(Frame):
             Frame.__init__(self, root)
         else:
             Frame.__init__(self, self.master)
-        body_font = font.Font(family='Microsoft Sans Serif', size=10)
+        body_font = font.Font(family='Georgia', size=10)
         self.entry = entry
         if not self.entry:
             self.entry = JEntry()

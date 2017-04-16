@@ -151,8 +151,8 @@ class Storage:
         fout.close()
         
     def saveJournal(self, journal):
-        """Saves the journal of the storage object (not the journal of t
-        the journal object)"""
+        """Saves the journal of the storage object (not the journal of the 
+        journal object)"""
         
         fout = open(self.ini['SAVE LOCATION'] + "journal_db", "wb")
         pickle.dump(journal, fout)
