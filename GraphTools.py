@@ -15,12 +15,14 @@ NIL = None
 WIDTH = 300
 HEIGHT = 200
 BUTTON_LENGTH = 180
-BUTTON_HEIGHT = 50
+BUTTON_HEIGHT = 60
        
-class JGraph:
-    def __init__(self, controller, journal):
+class JGraph(Frame):
+    def __init__(self, master, controller, journal, entry):
+        self.master = master
         self.controller = controller
         self.journal=journal
+        self.entry=entry
         self.number_vertices = 0
         self.adjacency = {}
         self.parent = {}
@@ -45,6 +47,16 @@ class JGraph:
         
         self.style = Style()
         self.style.configure('Bold.TButton', font=('Sans', '8', 'bold'), background='black')
+        self.style.configure('GreyedOut.TButton', background='grey')
+        self.style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
+        
+        Frame.__init__(self, self.master)
+        self.NEWLINK = Button(master=self, text="Create Linked Entry", command=self.controller.newLink)
+        self.DISPLAY = Button(master=self, text="Display Linked Entries", 
+                              command=self.creatGraphDialog, style='Greyed.TButton',
+                              state=DISABLED)
+        self.NEWLINK.pack(fill=X)
+        self.DISPLAY.pack(fill=X)
         
     def BFS(self, date):
         self.discovered = {}
@@ -128,12 +140,10 @@ class JGraph:
                 self.adjacency[parent].append(date)
             self.number_vertices += 1
         
-    def creatGraphDialog(self, date):
-        
+    def creatGraphDialog(self):
+        date = self.entry.getDate()
         self.findTreeDims(self.getRoot(date))
         current = date
-        style = Style()
-        style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
         
         self.graph_dialog = Toplevel()
         self.graph_dialog.title('Graph')
@@ -272,7 +282,15 @@ class JGraph:
                 parent = None
         return root.getDate()
         
-    def updateGUI(self):
-        None
+    def updateGUI(self, entry):
+        self.entry = entry
+        if not self.entry.getChild() and not self.entry.getParent():
+            self.DISPLAY.config(state=DISABLED)
+        else:
+            self.DISPLAY.config(state=NORMAL)
+            
+    def clearGUI(self, entry):
+        self.destroyGraphDialog()
+        self.updateGUI(entry)
         
             

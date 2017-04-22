@@ -142,8 +142,6 @@ class TagsCanvas(TagsCheckboxManager):
     def createCheckboxDialog(self):
         root = Toplevel()
         root.title('Tags')
-        s=Style()
-        print(s.theme_names())
         root.minsize(width=300, height=70)
         root.maxsize(width=root.winfo_screenwidth(), height=root.winfo_screenheight())
         canvas = Canvas(root, highlightthickness=0)

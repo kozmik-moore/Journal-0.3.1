@@ -83,8 +83,7 @@ class Main(Tk):
         self.lower_left =Frame(self.lower_frame)
         self.options_frame = Frame(self.lower_frame)
         self.lower_right = Frame(self.lower_frame)
-        
-        self.jgraph = JGraph(self, self.journal)
+        self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry)
         
         self.date_frame.pack(side=TOP, expand=True, fill=X)
         self.top_frame.pack(side=TOP, expand=True, fill=X)
@@ -102,14 +101,14 @@ class Main(Tk):
         self.lower_frame.pack(side=TOP, expand=True, fill=X)
         
         self.SAVE = Button(self.options_frame, text="Save", command=self.save).grid(row=0, column=0)
-        self.LINK = Button(self.options_frame, text="Create Linked Entry", command=self.newLink).grid(row=0, column=2, sticky=EW)
+#        self.LINK = Button(self.options_frame, text="Create Linked Entry", command=self.newLink).grid(row=0, column=2, sticky=EW)
         self.NEW = Button(self.options_frame, text="New Entry", command=self.newEntry).grid(row=0, column=6)
         self.QUIT = Button(self.options_frame, text="Quit", command=self.destroyApp).grid(row=1, column=0)
-        self.LINKS = Button(self.options_frame, text="Display Linked Entries", command=self.displayLinks).grid(row=1, column=2)
+#        self.LINKS = Button(self.options_frame, text="Display Linked Entries", command=self.displayLinks).grid(row=1, column=2)
         self.DELETE = Button(self.options_frame, text="Delete", command=self.delete).grid(row=1, column=6)
         self.DISPLAY_ATTACHMENTS = Button(self.options_frame, text='View Attachments', command=self.attachmanager.displayAttachments).grid(row=1, column=4)
         self.ADD_ATTACHMENTS = Button(self.options_frame, text='Add Attachment', command=self.attachmanager.askForAttachment).grid(row=0, column=4, sticky=EW)
-
+        self.jgraph.grid(row=0, column=2, sticky=NS, rowspan=2)
         
         menubar = Menu(self)
         pref_menu = Menu(menubar, tearoff=0)
@@ -175,6 +174,7 @@ class Main(Tk):
         self.body_frame.updateGUI(self.entry)
         self.tags_frame.updateGUI(self.entry)
         self.attachmanager.updateGUI(self.entry)
+        self.jgraph.updateGUI(self.entry)
         
     def clearGUI(self):
         self.entry = JEntry()
@@ -182,6 +182,7 @@ class Main(Tk):
         self.body_frame.clearGUI(self.entry)
         self.tags_frame.clearGUI(self.entry)
         self.attachmanager.clearGUI(self.entry)
+        self.jgraph.clearGUI(self.entry)
         
     def bindDateControl(self):
         self.date_frame.bindDatebox(self.updateGUI)
