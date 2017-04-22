@@ -87,14 +87,16 @@ class Main(Tk):
         self.jgraph = JGraph(self, self.journal)
         
         self.date_frame.pack(side=TOP, expand=True, fill=X)
-        self.top_frame.pack(side=TOP, expand=True, fill=X)
-        self.body_frame.pack(side=TOP, expand=True, fill=BOTH)
-        self.tags_frame.pack(side=TOP, expand=True, fill=X)
+        self.top_frame.pack(side=TOP, expand=True, fill=X, padx=6)
+        self.body_frame.pack(side=TOP, expand=True, fill=BOTH, padx=6)
+        self.tags_frame.pack(side=TOP, expand=True, fill=X, padx=6)
         
-        self.LAST_BACKUP_LABEL = Label(self.top_frame, text='Last Backup: ')
-        self.LAST_BACKUP = Label(self.top_frame, textvariable=self.last_backup_var)
+        last_backup_frame = Frame(self.top_frame)
+        self.LAST_BACKUP_LABEL = Label(last_backup_frame, text='Last Backup: ')
+        self.LAST_BACKUP = Label(last_backup_frame, textvariable=self.last_backup_var)
         self.LAST_BACKUP.pack(side=RIGHT)
         self.LAST_BACKUP_LABEL.pack(side=RIGHT)
+        last_backup_frame.pack(side=RIGHT, padx=20)
         
         self.lower_left.pack(side=LEFT, expand=True, fill=X)
         self.options_frame.pack(side=LEFT)
@@ -139,7 +141,7 @@ class Main(Tk):
         self.storage.runBackup()
         self.updateGUI(entry=self.entry)
         style=Style(self)
-        style.theme_use('winnative')
+        style.theme_use('vista')
                 
     def createAboutWindow(self):
         message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 4.3.1 Suite (Python 3.6)"

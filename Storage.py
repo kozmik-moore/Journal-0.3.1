@@ -24,6 +24,8 @@ class Storage:
         self.backup_interval = IntVar(master=self.master, name='Backup Interval', value=self.ini['BACKUP INTERVAL'])
         self.last_backup = StringVar(master=self.master, name='Last Backup', value=self.ini['LAST BACKUP'])
         
+        self.createResourceFolder()
+         
     def LoadIniFile(self):
         try:
             fin = open(self.config_path + "Journal.ini", "rb")
@@ -160,3 +162,8 @@ class Storage:
         
     def closeStreams(self):
         None
+        
+    def createResourceFolder(self):
+        tmp = self.config_path+'/Resources'
+        if not path.exists(path.abspath(tmp)):
+            makedirs(tmp)

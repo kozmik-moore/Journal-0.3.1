@@ -13,8 +13,8 @@ from os import remove
 from inspect import getsourcefile
 from shutil import copy
 from subprocess import Popen
-from shlex import quote
-from JObject import JEntry
+import PIL.Image as PI
+from PIL import ImageTk
 from tkinter import filedialog as filedialog
 from tkinter import messagebox as messagebox
 from tkinter import *
@@ -34,6 +34,7 @@ class AttachmentManager:
         self.frame = None
         self.DELETE = None
         self.buttonlist = None
+        self.delete_icon = None
         
         self.path = abspath(getsourcefile(lambda:0).strip('AttachmentTools.py'))
         self.path += '\\Attachments\\'
@@ -90,13 +91,13 @@ class AttachmentManager:
                     Popen(c))
                 self.buttonlist.append([button, BooleanVar(self.frame, False, button.cget('text')), path])
                 button.pack(expand=1, fill=X, pady=2)
-            self.DELETE = Button(bottomframe, text='Delete', command=self.deleteAttachment)
-            separator = Separator(bottomframe)
-            separator.pack(side=TOP)
+            self.DELETE = Button(bottomframe, text='Delete Attachment', command=self.deleteAttachment)
+#            separator = Separator(bottomframe)
+#            separator.pack(side=TOP)
             self.DELETE.pack(side=RIGHT)
 #            topframe.pack(side=TOP, pady=2)
             self.frame.pack(side=TOP)
-            bottomframe.pack(side=TOP)
+            bottomframe.pack(side=TOP, pady=4)
             self.dialog.grab_set()
             
             self.dialog.protocol('WM_DELETE_WINDOW', self.destroyDialog)
@@ -112,9 +113,17 @@ class AttachmentManager:
         
         for button in self.buttonlist:
             checkbutton = Checkbutton(self.frame, text=button[0].cget('text'), var=button[1])
-            checkbutton.pack(side=TOP)
-        
-        self.DELETE.config(command=self.refreshDialog, text='OK')
+            checkbutton.pack(side=TOP, expand=True, fill=X, pady=2)
+            
+        w = self.DELETE.winfo_width()
+        h = self.DELETE.winfo_height()
+        if not self.delete_icon:
+            iconpath = self.mainpath.rsplit('\\Attachments',1)[0] + '\\Resources\\Trash_Can-512.png'
+            self.delete_icon = PI.open(iconpath)
+            self.delete_icon.thumbnail((h-2,h-2))
+            self.delete_icon = ImageTk.PhotoImage(self.delete_icon)
+        self.DELETE.config(command=self.refreshDialog, text='', image=self.delete_icon,
+                           width=w)
         self.DELETE.pack()
 #        self.frame.pack()
             
@@ -127,7 +136,7 @@ class AttachmentManager:
                 deletelist.append(i)
                 if abspath(self.path+button[0].cget('text')) in self.old_attachments:
                     saved_attachment = True
-        if deletelist: 
+        if deletelist:
             if len(deletelist) > 1 and saved_attachment:
                 message = "This will delete previously saved attachments from your journal storage."\
                 " If you want to keep any of the attachments, press \"Cancel\" and copy "\
@@ -156,19 +165,21 @@ class AttachmentManager:
                             self.old_attachments.remove(filepath)
                     else:
                         filepath = self.buttonlist[d][2]
-                    self.buttonlist[d][0].destroy()
-                    self.buttonlist[d] = None
+#                    self.buttonlist[d][0].destroy()
+#                    self.buttonlist[d] = None
                     if filepath in self.new_attachments:
                         self.new_attachments.remove(filepath)
                     self.entry.deleteAttachment(filename)
-                self.buttonlist = list(filter(None, self.buttonlist))
-        self.destroyDialog()                
+                for item in self.buttonlist:
+                    item[0].destroy()
+                self.buttonlist = None
+                self.destroyDialog()
+#                self.buttonlist = list(filter(None, self.buttonlist))                
         
     def destroyDialog(self):
         self.dialog.destroy()
         self.dialog = None
         self.frame = None
-        self.buttonlist = None
         
     def clearGUI(self, jentry):
         self.entry = jentry
@@ -187,9 +198,15 @@ class AttachmentManager:
                 copy(filepath, path)
                 f = filepath.rsplit('\\',1)[1]
                 self.entry.addAttachment(f)
-            self.old_attachments = self.entry.getAttachments()
+            tmp = self.entry.getAttachments()
+            self.old_attachments = []
+            for filename in tmp:
+                self.old_attachments.append(self.path+filename)                
             self.new_attachments = []
         
     def getAttachmentList(self, datetimeobj):
         date = DT.getDateFileStorageFormat(datetimeobj)
+        
+    def updateAttachments(self):
+        None
         
