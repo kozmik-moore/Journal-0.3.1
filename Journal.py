@@ -67,33 +67,41 @@ class Main(Tk):
             self.journal.add(self.entry)
         else:
             self.entry = JEntry()
-#        self.buffer_entry = None
-
-        self.attachmanager = AttachmentManager(self, self.journal, self.entry)
+            
+        style=Style(self)
+        style.theme_use('vista')
         
         self.backup_interval_var = self.storage.getBackupIntervalVar()
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
         
         self.top_frame = Frame(self)
-        self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, self)
+        top_left_frame = Frame(self.top_frame, width=100)
+        self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, self, width=100)
+        top_right_frame = Frame(self.top_frame)
         self.body_frame = BodyFrame(self, self.entry)
+        self.body_frame.config(border=5, relief='ridge')
         self.tags_frame = TagsFrame(self, self.journal, self.entry)
         self.lower_frame = Frame(self)
         self.lower_left =Frame(self.lower_frame)
         self.options_frame = Frame(self.lower_frame)
         self.lower_right = Frame(self.lower_frame)
         self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry)
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, self.entry)
+
+        top_left_frame.grid(row=0, column=0)
+        self.date_frame.grid(row=0, column=1, padx=5)
+        top_right_frame.grid(row=0, column=2)
+        self.top_frame.grid_columnconfigure(0, weight=1)
+        self.top_frame.grid_columnconfigure(1, weight=2)
+        self.top_frame.grid_columnconfigure(2, weight=0)
+        self.top_frame.pack(side=TOP, expand=True, fill=X, padx=5)
+        self.body_frame.pack(side=TOP, expand=True, fill=BOTH, padx=5)
+        self.tags_frame.pack(side=TOP, expand=True, fill=X, padx=5)
         
-        self.date_frame.pack(side=TOP, expand=True, fill=X)
-        self.top_frame.pack(side=TOP, expand=True, fill=X, padx=6)
-        self.body_frame.pack(side=TOP, expand=True, fill=BOTH, padx=6)
-        self.tags_frame.pack(side=TOP, expand=True, fill=X, padx=6)
-        
-        last_backup_frame = Frame(self.top_frame)
-        self.LAST_BACKUP_LABEL = Label(last_backup_frame, text='Last Backup: ')
-        self.LAST_BACKUP = Label(last_backup_frame, textvariable=self.last_backup_var)
-        self.LAST_BACKUP.pack(side=RIGHT)
+        self.LAST_BACKUP_LABEL = Label(top_right_frame, text='Last Backup: ')
+        self.LAST_BACKUP = Label(top_right_frame, textvariable=self.last_backup_var)
+        self.LAST_BACKUP.pack(side=RIGHT, padx=3)
         self.LAST_BACKUP_LABEL.pack(side=RIGHT)
         last_backup_frame.pack(side=RIGHT, padx=20)
         
@@ -103,14 +111,11 @@ class Main(Tk):
         self.lower_frame.pack(side=TOP, expand=True, fill=X)
         
         self.SAVE = Button(self.options_frame, text="Save", command=self.save).grid(row=0, column=0)
-#        self.LINK = Button(self.options_frame, text="Create Linked Entry", command=self.newLink).grid(row=0, column=2, sticky=EW)
         self.NEW = Button(self.options_frame, text="New Entry", command=self.newEntry).grid(row=0, column=6)
         self.QUIT = Button(self.options_frame, text="Quit", command=self.destroyApp).grid(row=1, column=0)
-#        self.LINKS = Button(self.options_frame, text="Display Linked Entries", command=self.displayLinks).grid(row=1, column=2)
         self.DELETE = Button(self.options_frame, text="Delete", command=self.delete).grid(row=1, column=6)
-        self.DISPLAY_ATTACHMENTS = Button(self.options_frame, text='View Attachments', command=self.attachmanager.displayAttachments).grid(row=1, column=4)
-        self.ADD_ATTACHMENTS = Button(self.options_frame, text='Add Attachment', command=self.attachmanager.askForAttachment).grid(row=0, column=4, sticky=EW)
-        self.jgraph.grid(row=0, column=2, sticky=NS, rowspan=2)
+        self.jgraph.grid(row=0, column=2, rowspan=2)
+        self.attachmanager.grid(row=0, column=4, rowspan=2)
         
         menubar = Menu(self)
         pref_menu = Menu(menubar, tearoff=0)
@@ -139,8 +144,6 @@ class Main(Tk):
         self.bindDateControl()
         self.storage.runBackup()
         self.updateGUI(entry=self.entry)
-        style=Style(self)
-        style.theme_use('vista')
                 
     def createAboutWindow(self):
         message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 4.3.1 Suite (Python 3.6)"
@@ -188,44 +191,6 @@ class Main(Tk):
         
     def bindDateControl(self):
         self.date_frame.bindDatebox(self.updateGUI)
-        
-#    def journalIsChanged(self):
-#        if self.storage.journalIsSaved(self.journal):
-#            return False
-#        else:
-#            return True
-            
-#    def entryIsChanged(self):
-#        date = self.entry.getDate()
-#        storage = self.storage.getJournal()
-#        if not date:
-#            return True
-#        if date in storage.getAllDates():
-#            if not storage.getEntry(date).equals(self.entry):
-#                return True
-#            if self.entry.getBody() != self.body_frame.getBody():
-#                return True
-#            if self.entry.getTags() != storage.getEntry(date).getTags():
-#                return True
-#        elif date in self.journal.getAllDates():
-#            if self.entry.getBody() != self.body_frame.getBody():
-##            if self.journal.getEntry(date).equals(self.entry):
-#                return True
-#        return False
-                
-#    def throwSaveWarning(self):
-##        selection = messagebox.askyesno('Save Entry', 'Save before continuing?')
-##        if selection:
-#        self.save()
-            
-#    def throwFinalSaveWarning(self):
-#        """Needs more thought before fully implementing:
-#        leaves filestreams open when 'no' is selected"""
-##        selection = messagebox.askyesno("Save All Changes", "Save all changes before exiting?")
-##        if selection:
-#        self.storage.saveJournal(self.journal)
-#        else:
-#            self.storage.closeStreams()
             
     def save(self):
         self.date_frame.save()
@@ -258,15 +223,6 @@ class Main(Tk):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():
             self.save()
             self.updateGUI(entry=JEntry(parent=self.entry.getDate(), tags=self.entry.getTags()))
-        
-    def displayLinks(self):
-        if self.entry.getDate():
-            if not self.entry.getChild() and not self.entry.getParent():
-                message = "No linked entries to display!"
-                main = messagebox.Message(title='Linked Entries', message=message)
-                main.show()
-            else:
-                self.jgraph.creatGraphDialog(self.entry.getDate())
                 
 class JournalStyle(Style):
     def __init__(self, master):

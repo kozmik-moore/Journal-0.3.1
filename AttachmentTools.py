@@ -21,10 +21,11 @@ from tkinter import *
 from tkinter.ttk import *
 #import pdb
 
-class AttachmentManager:
-    def __init__(self, master, jobject, jentry):
+class AttachmentManager(Frame):
+    def __init__(self, master, controller, jobject, jentry):
 #        pdb.set_trace()
         self.master = master
+        self.controller = controller
         self.journal = jobject
         self.entry = jentry
         self.old_attachments = [] #strings of filepaths
@@ -45,7 +46,15 @@ class AttachmentManager:
         except FileExistsError:
             pass
         
+        Frame.__init__(self, self.master)
+        self.NEW = Button(self, text='Add Attachment', command=self.askForAttachment)
+        self.DISPLAY = Button(self, text='Display Attachments', command=self.displayAttachments,
+                              state=DISABLED)
+        self.NEW.pack(fill=X)
+        self.DISPLAY.pack(fill=X)
+        
     def updateGUI(self, jentry):
+        self.DISPLAY.config(state=DISABLED)
         self.old_attachments = []
         self.new_attachments = []
         self.entry = jentry
@@ -55,16 +64,18 @@ class AttachmentManager:
             self.path = self.mainpath + DT.getDateFileStorageFormat(date) + '\\'
         attachments = self.entry.getAttachments()
         if attachments:
+            self.DISPLAY.config(state=NORMAL)
             for filename in attachments:
                 self.old_attachments.append(abspath(self.path + filename))
             
     def addAttachment(self, filepath):
         self.new_attachments.append(filepath)
+        self.DISPLAY.config(state=NORMAL)
         
     def askForAttachment(self):
         options = {}
         options['initialdir'] = self.path
-        options['parent'] = self.master
+        options['parent'] = self.controller
         options['title'] = 'Select a file to add'
         path = filedialog.askopenfilename(**options)
         if path:
@@ -180,6 +191,9 @@ class AttachmentManager:
         self.dialog.destroy()
         self.dialog = None
         self.frame = None
+        self.buttonlist = None
+        if not self.old_attachments and not self.new_attachments:
+            self.DISPLAY.config(state=DISABLED)
         
     def clearGUI(self, jentry):
         self.entry = jentry
