@@ -103,7 +103,6 @@ class Main(Tk):
         self.LAST_BACKUP = Label(top_right_frame, textvariable=self.last_backup_var)
         self.LAST_BACKUP.pack(side=RIGHT, padx=3)
         self.LAST_BACKUP_LABEL.pack(side=RIGHT)
-        last_backup_frame.pack(side=RIGHT, padx=20)
         
         self.lower_left.pack(side=LEFT, expand=True, fill=X)
         self.options_frame.pack(side=LEFT)
