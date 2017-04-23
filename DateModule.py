@@ -12,9 +12,9 @@ from DateFilter import DateFilter
 import DateTools
 
 class DateFrame(Frame):
-    def __init__(self, master, jentry, jobject, controller):
+    def __init__(self, master, jentry, jobject, controller, **kw):
         self.master = master
-        Frame.__init__(self, self.master)
+        Frame.__init__(self, self.master, **kw)
         inner_frame = Frame(self)
         self.jobject = jobject
         self.jentry = jentry
