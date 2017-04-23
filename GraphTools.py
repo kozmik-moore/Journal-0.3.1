@@ -10,21 +10,19 @@ from tkinter.ttk import *
 from JObject import *
 import DateTools
 
-#class ButtonGraph:
-#    def __init__(self):
-#        None
-
 INF = -1
 NIL = None
-WIDTH = 450
-HEIGHT = 300
-BUTTON_LENGTH = 240
-BUTTON_HEIGHT = 80
+WIDTH = 300
+HEIGHT = 200
+BUTTON_LENGTH = 180
+BUTTON_HEIGHT = 60
        
-class JGraph:
-    def __init__(self, controller, journal):
+class JGraph(Frame):
+    def __init__(self, master, controller, journal, entry):
+        self.master = master
         self.controller = controller
         self.journal=journal
+        self.entry=entry
         self.number_vertices = 0
         self.adjacency = {}
         self.parent = {}
@@ -49,6 +47,16 @@ class JGraph:
         
         self.style = Style()
         self.style.configure('Bold.TButton', font=('Sans', '8', 'bold'), background='black')
+        self.style.configure('GreyedOut.TButton', background='grey')
+        self.style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
+        
+        Frame.__init__(self, self.master)
+        self.NEWLINK = Button(master=self, text="Create Linked Entry", command=self.controller.newLink)
+        self.DISPLAY = Button(master=self, text="Display Linked Entries", 
+                              command=self.creatGraphDialog, style='Greyed.TButton',
+                              state=DISABLED)
+        self.NEWLINK.pack(fill=X)
+        self.DISPLAY.pack(fill=X)
         
     def BFS(self, date):
         self.discovered = {}
@@ -132,24 +140,21 @@ class JGraph:
                 self.adjacency[parent].append(date)
             self.number_vertices += 1
         
-    def creatGraphDialog(self, date):
-        
+    def creatGraphDialog(self):
+        date = self.entry.getDate()
         self.findTreeDims(self.getRoot(date))
         current = date
-        style = Style()
-        style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
         
         self.graph_dialog = Toplevel()
         self.graph_dialog.title('Graph')
         self.graph_dialog.grab_set()
-        xbar = Scrollbar(self.graph_dialog, orient=HORIZONTAL)
-        ybar = Scrollbar(self.graph_dialog, orient=VERTICAL)
-        canvas = Canvas(self.graph_dialog, yscrollcommand=ybar.set, xscrollcommand=xbar.set)
-        xbar.config(command=canvas.xview)
-        ybar.config(command=canvas.yview)
+        frame = Frame(self.graph_dialog)
+        xbar = Scrollbar(frame, orient=HORIZONTAL)
+        ybar = Scrollbar(frame, orient=VERTICAL)
+        canvas = Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set)
         xbar.pack(side=BOTTOM, fill=X)
         ybar.pack(side=RIGHT, fill=Y)
-        canvas.pack(fill=BOTH, expand=True)
+        frame.pack(expand=True, fill=BOTH)
         for date in sorted(self.coordinates):
             x=self.coordinates[date][0]*BUTTON_LENGTH
             y=self.coordinates[date][1]*BUTTON_HEIGHT
@@ -164,15 +169,21 @@ class JGraph:
             y=self.coordinates[date][1]*BUTTON_HEIGHT
             window = canvas.create_window(x,y)
             if current == date:
-                button=Button(canvas, text=DateTools.getDateGUIFormat(date), style='Curr.TButton', command=lambda date=date:self.previewEntry(date))
+                button=Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), style='Curr.TButton', command=lambda date=date:self.previewEntry(date))
             else:
-                button=Button(canvas, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
+                button=Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
             canvas.itemconfig(window, window=button)
-        canvas.config(scrollregion=canvas.bbox(ALL))
-        size = canvas.bbox('all')
-#        print(size)
-        width = size[2]-size[0]
-        height = size[3]-size[1]
+        size = (canvas.bbox('all'))
+        region = list(size)
+        for i in range(len(region)):
+            if i==3 or i==2:
+                region[i] += 100
+            else:
+                region[i] -= 100
+        region = tuple(region)
+        canvas.config(scrollregion=region)
+        width = region[2]-region[0]
+        height = region[3]-region[1]
         screen_width = self.graph_dialog.winfo_screenwidth()
         screen_height = self.graph_dialog.winfo_screenheight()
         if width > screen_width:
@@ -184,8 +195,12 @@ class JGraph:
         if height < HEIGHT:
             height = HEIGHT
         dims = str(width)+'x'+str(height)
+        canvas.pack(fill=BOTH, expand=True)
         self.graph_dialog.geometry(dims)
         self.graph_dialog.update_idletasks()
+        xbar.config(command=canvas.xview)
+        ybar.config(command=canvas.yview)
+        canvas.xview_moveto(.15)
         self.graph_dialog.protocol("WM_DELETE_WINDOW", self.destroyGraphDialog)
         
     def destroyGraphDialog(self):
@@ -195,8 +210,8 @@ class JGraph:
             pass
         self.graph_dialog = None
         self.coordinates = {}
-        self.height=0
-        self.widest
+        self.height = 0
+        self.widest = 0
         
     def goToEntry(self, date):
         self.controller.updateGUI(entry=self.journal.getEntry(date))
@@ -212,21 +227,31 @@ class JGraph:
         outer_frame = Frame(self.preview_dialog)
         body_frame = Frame(outer_frame)
         tags_frame = Frame(outer_frame, height=1)
+        
         date_label = Label(outer_frame, text=DateTools.getDateGUIFormat(date))
+        
         scrollbar = Scrollbar(body_frame)
         body = Text(body_frame, wrap=WORD, yscrollcommand=scrollbar.set)
         scrollbar.config(command=body.yview)
         body.insert(INSERT, entry.getBody())
         body.config(state='disabled')
+        
         tags_label = Label(tags_frame, text='Tags:')
         tags_list = ''
-        tags_list += entry.getTags()[0]
-        for i in range(1, len(entry.getTags())-1):
-            tags_list += ', ' + entry.getTags()[i]
-        tags = Text(tags_frame, height=1)
+        tmp = entry.getTags()
+        tags_list += tmp.pop(0)
+        while len(tmp) != 0:
+            tags_list += ', '
+            tags_list += tmp.pop(0)
+        tags_scrollbar = Scrollbar(tags_frame)
+        tags = Text(tags_frame, height=1, wrap=WORD, yscrollcommand=tags_scrollbar.set)
+        tags_scrollbar.config(command=tags.yview)
         tags.insert(INSERT, tags_list)
         tags.config(state='disabled')
-        button = Button(outer_frame, style='Bold.TButton', text='Go To Entry', command=lambda date=date: self.goToEntry(date))
+        
+        button = Button(outer_frame, style='Bold.TButton', text='Go To Entry',
+                        command=lambda date=date: self.goToEntry(date))
+        
         outer_frame.pack()
         date_label.pack()
         body_frame.pack()
@@ -235,6 +260,7 @@ class JGraph:
         tags_frame.pack()
         tags_label.pack(side=LEFT)
         tags.pack(side=LEFT)
+        tags_scrollbar.pack(side=LEFT)
         button.pack()
         
         self.preview_dialog.protocol('WM_DELETE_WINDOW', self.destroyPreviewDialog)
@@ -256,7 +282,15 @@ class JGraph:
                 parent = None
         return root.getDate()
         
-    def updateGUI(self):
-        None
+    def updateGUI(self, entry):
+        self.entry = entry
+        if not self.entry.getChild() and not self.entry.getParent():
+            self.DISPLAY.config(state=DISABLED)
+        else:
+            self.DISPLAY.config(state=NORMAL)
+            
+    def clearGUI(self, entry):
+        self.destroyGraphDialog()
+        self.updateGUI(entry)
         
             
