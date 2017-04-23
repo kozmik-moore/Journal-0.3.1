@@ -24,7 +24,8 @@ class BodyFrame(Frame):
             self.entry = JEntry()
         
         self.scrollbar = Scrollbar(self)
-        self.body_field = Text(self, font=body_font, yscrollcommand=self.scrollbar.set, wrap=WORD)        
+        self.body_field = Text(self, font=body_font, yscrollcommand=self.scrollbar.set,
+                               wrap=WORD, bg='black', fg='green', insertbackground='white')        
         self.scrollbar.config(command=self.body_field.yview)
         self.body_field.pack(side=LEFT, expand=True, fill=BOTH)
         self.scrollbar.pack(side=LEFT, fill=Y)

@@ -89,8 +89,8 @@ class Main(Tk):
         self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry)
         self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, self.entry)
 
-        top_left_frame.grid(row=0, column=0)
-        self.date_frame.grid(row=0, column=1, padx=5)
+        top_left_frame.grid(row=0, column=1)
+        self.date_frame.grid(row=0, column=0, padx=5, sticky=W)
         top_right_frame.grid(row=0, column=2)
         self.top_frame.grid_columnconfigure(0, weight=1)
         self.top_frame.grid_columnconfigure(1, weight=2)

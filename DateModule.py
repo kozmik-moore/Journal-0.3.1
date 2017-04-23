@@ -33,7 +33,7 @@ class DateFrame(Frame):
         self.style = Style()
         self.style.configure('NetInd.TLabel', foreground='gray')
         self.is_linked = StringVar(self, value='Not Linked')
-        self.HASLINKS = Label(inner_frame, width=12, anchor=CENTER, textvariable=self.is_linked, style='NetInd.TLabel')
+        self.HASLINKS = Label(inner_frame, width=12, textvariable=self.is_linked, style='NetInd.TLabel')
         
         self.HASLINKS.pack(side=LEFT)        
         self.datebox.pack(side=LEFT)
