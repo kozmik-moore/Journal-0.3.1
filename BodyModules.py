@@ -61,3 +61,6 @@ class BodyFrame(Frame):
             return False
         else:
             return True
+    
+    def grabFocus(self):
+        self.body_field.focus_force()

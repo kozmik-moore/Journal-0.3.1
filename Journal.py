@@ -179,6 +179,7 @@ class Main(Tk):
         self.tags_frame.updateGUI(self.entry)
         self.attachmanager.updateGUI(self.entry)
         self.jgraph.updateGUI(self.entry)
+        self.body_frame.grabFocus()
         
     def clearGUI(self):
         self.entry = JEntry()
@@ -187,6 +188,7 @@ class Main(Tk):
         self.tags_frame.clearGUI(self.entry)
         self.attachmanager.clearGUI(self.entry)
         self.jgraph.clearGUI(self.entry)
+        self.body_frame.grabFocus()
         
     def bindDateControl(self):
         self.date_frame.bindDatebox(self.updateGUI)
