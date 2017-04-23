@@ -193,7 +193,8 @@ class TagsCanvas(TagsCheckboxManager):
         
     def delete(self, button):
         self.dialog.destroy()
-        delete = messagebox.askyesno(title='Delete?', message='Are you sure you want to delete this tag?')
+#        delete = messagebox.askyesno(title='Delete?', message='Are you sure you want to delete this tag?')
+        delete = True
         if delete:
             self.removeTag(button.cget('text'))
             self.updateGUI()
