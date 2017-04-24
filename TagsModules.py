@@ -4,12 +4,11 @@ Created on Thu Oct  6 09:50:53 2016
 
 @author: Kozmik
 """
-from tkinter import *
-from tkinter.ttk import *
-from JObject import *
+import tkinter as tk
+import tkinter.ttk as ttk
+from JObject import JObject
 from math import ceil
 from math import sqrt
-from tkinter import messagebox as messagebox
 from tkinter import simpledialog as simpledialog
         
         
@@ -30,7 +29,7 @@ class TagsCheckboxManager:
 #        self.vars = {}
         for tag in self.journal.getAllTags():
             if tag not in self.vars:
-                self.vars[tag] = [BooleanVar(master=None, value=False, name='TF.'+tag), None]
+                self.vars[tag] = [tk.BooleanVar(master=None, value=False, name='TF.'+tag), None]
             else: 
                 self.vars[tag][0].set(False)
                 self.vars[tag][1] = None
@@ -39,7 +38,7 @@ class TagsCheckboxManager:
                 self.vars[tag][0].set(True)
                 self.vars[tag][1] = None
             else:
-                self.vars[tag] = [BooleanVar(master=None, value=True, name='TF.'+tag), None]
+                self.vars[tag] = [tk.BooleanVar(master=None, value=True, name='TF.'+tag), None]
         for tag in list(self.vars):
             if tag not in self.entry.getTags() and tag not in self.journal.getAllTags():
                 del self.vars[tag]            
@@ -83,9 +82,11 @@ class TagsCheckboxManager:
 class TagsCanvas(TagsCheckboxManager):
     def __init__(self, master, journal):
         self.displayed_tags = []
-        self.canvas = Canvas(master, height=1, width=0)
+        self.canvas = tk.Canvas(master, height=1, width=0, bg='slate gray')
         self.tag = None
         self.dialog = None
+        style = ttk.Style()
+#        style.configure('Tags.TButton', width='')
         TagsCheckboxManager.__init__(self, master, journal)
         
     def updateGUI(self, entry=None):
@@ -95,7 +96,8 @@ class TagsCanvas(TagsCheckboxManager):
         self.clearCanvas()
         self.displayed_tags = []
         for tag in self.entry.getTags():
-            self.displayed_tags.append(Button(master=self.canvas, text=tag))
+            self.displayed_tags.append(ttk.Button(master=self.canvas, takefocus=0, 
+                                                  text=tag, style='UI.TButton'))
             self.displayed_tags[-1].config(command=lambda button=self.displayed_tags[-1]:self.updateButton(button))
         col = 10
         row = ceil(len(self.entry.getTags()) / col)
@@ -103,7 +105,7 @@ class TagsCanvas(TagsCheckboxManager):
         grid = [(x,y) for y in range(0, row) for x in range(0, col)]
         for index in range(0, len(self.displayed_tags)):
             x, y = grid[index]
-            self.displayed_tags[index].grid(column=x, row=y, sticky=EW)
+            self.displayed_tags[index].grid(column=x, row=y, sticky='ew')
         if len(self.displayed_tags) == 0:
             self.canvas.config(width=0)
             
@@ -113,7 +115,7 @@ class TagsCanvas(TagsCheckboxManager):
         self.canvas.config(width=0)
                 
     def updateFromStates(self, window=None):
-        if type(window) is Toplevel:
+        if type(window) is tk.Toplevel:
             window.destroy()
         states = self.getStates()
         for tag in states:
@@ -140,46 +142,49 @@ class TagsCanvas(TagsCheckboxManager):
         self.updateGUI()
         
     def createCheckboxDialog(self):
-        root = Toplevel()
+        root = tk.Toplevel(bg='slate gray')
         root.title('Tags')
         root.minsize(width=300, height=70)
         root.maxsize(width=root.winfo_screenwidth(), height=root.winfo_screenheight())
-        canvas = Canvas(root, highlightthickness=0)
+        canvas = tk.Canvas(root, highlightthickness=0, bg='slate gray')
         tagslist = self.getVarsList()
         if tagslist:
             for tag in tagslist:
-                tagslist[tag][1] = Checkbutton(master=canvas, text=tag, variable=tagslist[tag][0])
+                tagslist[tag][1] = tk.Checkbutton(master=canvas, text=tag, 
+                        variable=tagslist[tag][0], bg='slate gray')
             tmp = sorted(tagslist.keys())
             row = ceil(sqrt(len(tmp)))
             col = ceil(len(tagslist) / row)
             grid = [(x, y) for x in range(0, col) for y in range(0, row) ]
             for i in range(0, len(tmp)):
                 x, y = grid[i]
-                tagslist[tmp[i]][1].grid(row=y, column=x, sticky=W)
+                tagslist[tmp[i]][1].grid(row=y, column=x, sticky='w')
         else:
-            message = Message(canvas, text='There is nothing to display.')
+            message = tk.Message(canvas, text='There is nothing to display.')
             message.pack()
-        canvas.pack(padx=10, pady=7, side=LEFT)
+        canvas.pack(padx=10, pady=7, side='left')
         root.grab_set()
         root.protocol("WM_DELETE_WINDOW", lambda window=root:self.updateFromStates(root))
 
     def updateButton(self, button):
-        self.dialog = Toplevel()
+        self.dialog = tk.Toplevel()
         self.dialog.grab_set()
         self.dialog.title('Change Tag')
-        message = Message(self.dialog, text='Enter a new tag here:', width=150)
-        self.tag = Entry(self.dialog)
+        message = tk.Message(self.dialog, text='Enter a new tag here:', width=150)
+        self.tag = ttk.Entry(self.dialog)
         self.tag.insert(0, button.cget('text'))
-        button_box = Frame(self.dialog)
-        OK = Button(button_box, text='OK', command=lambda button=button:self.updateButtonText(button))
-        CANCEL = Button(button_box, text='Cancel', command=self.dialog.destroy)
-        DELETE = Button(button_box, text='Delete', command=lambda button=button:self.delete(button))
-        message.pack(side=TOP)
-        self.tag.pack(side=TOP)
-        OK.pack(side=LEFT)
-        CANCEL.pack(side=LEFT)
-        DELETE.pack(side=LEFT)
-        button_box.pack(side=TOP)
+        button_box = tk.Frame(self.dialog, bg='slate gray')
+        OK = ttk.Button(button_box, text='OK', 
+                        command=lambda button=button:self.updateButtonText(button))
+        CANCEL = ttk.Button(button_box, text='Cancel', command=self.dialog.destroy)
+        DELETE = ttk.Button(button_box, text='Delete', 
+                            command=lambda button=button:self.delete(button))
+        message.pack(side='top')
+        self.tag.pack(side='top')
+        OK.pack(side='left')
+        CANCEL.pack(side='left')
+        DELETE.pack(side='left')
+        button_box.pack(side='top')
         
     def updateButtonText(self, button):
         old = button.cget('text')
@@ -207,20 +212,19 @@ class TagsCanvas(TagsCheckboxManager):
         return self.canvas
    
             
-class TagsFrame(Frame, TagsCanvas):
-    def __init__(self, master, journal=None, entry=None):
+class TagsFrame(tk.Frame, TagsCanvas):
+    def __init__(self, master, journal=None, entry=None, **kw):
         self.entry = entry
-        Frame.__init__(self, master)
-#        self.tags_frame = Frame(master)
-        style =Style(self)
-        style.configure('Tags.TButton', font=('Sans', '8', 'bold'), background='black')
-        ADD = Button(self, text='Add', command=self.createAddDialog, style='Tags.TButton')
+        tk.Frame.__init__(self, master, **kw)
+        ADD = ttk.Button(self, takefocus=0, width=15, text='Add', command=self.createAddDialog, 
+                         style='Bold.UI.TButton')
         TagsCanvas.__init__(self, self, journal)
-        TAGS = Button(self, text='Tags:', command=self.createCheckboxDialog, style='Tags.TButton')
-        TAGS.pack(side=LEFT)
+        TAGS = ttk.Button(self, takefocus=0, width=15, text='Tags:', command=self.createCheckboxDialog, 
+                      style='Bold.UI.TButton')
+        TAGS.pack(side='left')
         canvas = self.getCanvas()
-        canvas.pack(side=LEFT)
-        ADD.pack(side=LEFT)
+        canvas.pack(side='left')
+        ADD.pack(side='left')
         self.updateGUI(self.entry)
         
 #    def clearGUI(self):
