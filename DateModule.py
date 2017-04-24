@@ -32,9 +32,9 @@ class DateFrame(tk.Frame):
         self.style = ttk.Style()
         self.style.configure('NetInd.TLabel', foreground='dark slate gray')
         self.is_linked = tk.StringVar(self, value='Not Linked')
-        self.HASLINKS = ttk.Label(inner_frame, width=12, textvariable=self.is_linked, style='NetInd.TLabel')
+        self.HASLINKS = ttk.Label(inner_frame, anchor='center', width=10, textvariable=self.is_linked, style='NetInd.TLabel')
         
-        self.HASLINKS.pack(side=tk.LEFT)        
+        self.HASLINKS.pack(side=tk.LEFT, expand=True)        
         self.datebox.pack(side=tk.LEFT)
         self.FILTER.pack(side=tk.LEFT)
         
