@@ -256,7 +256,7 @@ class JournalStyle(ttk.Style):
         self.theme_create('shadow', parent='default')
         self.theme_settings('shadow', {
                 'TButton': {
-                        'configure': {'padding': 3, 'foreground': 'white', 'relief': 'raised',
+                        'configure': {'padding': 3, 'foreground': 'black', 'relief': 'raised',
                                       'font': 'TkDefaultFont', 'background': 'slate gray', 
                                       'anchor': 'center', 'borderwidth': 1, 'width':15},
                         'layout': 
@@ -265,12 +265,12 @@ class JournalStyle(ttk.Style):
                                     [('Button.padding', {'sticky': 'nswe', 'children': 
                                         [('Button.label', {'sticky': 'nswe', 'expand':1})]})]})]})],
                         'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'white'), 
-                                               ('active', 'white')],
+                                               ('active', 'black')],
                                 'background': [('disabled', 'slate gray'), ('pressed', 'slate gray'), 
                                                ('active', 'light slate gray')],
                                 'relief': [('pressed', 'flat'), ('!pressed', 'raised')]}},
                 'TLabel': {
-                        'configure': {'background': 'slate gray', 'foreground': 'white'}},
+                        'configure': {'background': 'slate gray', 'foreground': 'black'}},
                 'TCombobox': {},
                 'TCheckbutton': {
                         'configure': {'indicatoron': 1}},
