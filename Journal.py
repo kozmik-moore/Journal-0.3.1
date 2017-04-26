@@ -4,28 +4,26 @@ Created on Tue Sep 20 15:00:50 2016
 
 @author: Kozmik
 """
-from tkinter import *
-from tkinter.ttk import *
+import tkinter as tk
+import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
-from tkinter import filedialog as filedialog
-from JObject import *
-from BodyModules import *
-#from DateFrame import *
-from TagsModules import *
-from Storage import *
-from DateModule import *
+from JObject import JEntry
+from BodyModules import BodyFrame
+from TagsModules import TagsFrame
+from Storage import Storage
+from DateModule import DateFrame
 import DateTools
 import textwrap
-from GraphTools import *
+from GraphTools import JGraph
 from AttachmentTools import AttachmentManager
-import pdb
                 
-class Main(Tk):
+class Main(tk.Tk):
     def __init__(self):
-        Tk.__init__(self)
+        tk.Tk.__init__(self)
         
         w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-        self.geometry("%dx%d+0+0" % (w*.9, h*.8))
+        self.geometry("%dx%d+0+0" % (w*.95, h*.8))
+        self.config(background='slate gray')
         self.title('Journal')
         self.storage = Storage()
         self.storage.LoadIniFile()
@@ -68,76 +66,96 @@ class Main(Tk):
         else:
             self.entry = JEntry()
             
-        style=Style(self)
-        style.theme_use('vista')
+        style = JournalStyle()
+        style.setNightStyle()
         
         self.backup_interval_var = self.storage.getBackupIntervalVar()
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
         
-        self.top_frame = Frame(self)
-        top_left_frame = Frame(self.top_frame, width=100)
-        self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, self, width=100)
-        top_right_frame = Frame(self.top_frame)
-        self.body_frame = BodyFrame(self, self.entry)
+        self.top_frame = tk.Frame(self, bg='slate gray')
+        top_left_frame = tk.Frame(self.top_frame, width=100)
+        self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, 
+                                    self, width=100, bg='slate gray')
+        top_right_frame = tk.Frame(self.top_frame, bg='slate gray')
+        self.body_frame = BodyFrame(self, self.entry, bg='slate gray')
         self.body_frame.config(border=5, relief='ridge')
-        self.tags_frame = TagsFrame(self, self.journal, self.entry)
-        self.lower_frame = Frame(self)
-        self.lower_left =Frame(self.lower_frame)
-        self.options_frame = Frame(self.lower_frame)
-        self.lower_right = Frame(self.lower_frame)
-        self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry)
-        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, self.entry)
+        self.tags_frame = TagsFrame(self, self.journal, self.entry, bg='slate gray',
+                                    relief='ridge', border=5)
+        self.lower_frame = tk.Frame(self, bg='slate gray')
+        self.lower_left = tk.Frame(self.lower_frame, bg='slate gray')
+        self.options_frame = tk.Frame(self.lower_frame, bg='slate gray', 
+                                      relief='ridge', border=5)
+        self.lower_right = tk.Frame(self.lower_frame, bg='slate gray')
+        self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry, 
+                             bg='slate gray')
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, 
+                                               self.entry, bg='slate gray')
 
-        top_left_frame.grid(row=0, column=0)
-        self.date_frame.grid(row=0, column=1, padx=5)
+#        top_left_frame.grid(row=0, column=1)
+        self.date_frame.grid(row=0, column=0, padx=5, sticky='w')
         top_right_frame.grid(row=0, column=2)
         self.top_frame.grid_columnconfigure(0, weight=1)
         self.top_frame.grid_columnconfigure(1, weight=2)
         self.top_frame.grid_columnconfigure(2, weight=0)
-        self.top_frame.pack(side=TOP, expand=True, fill=X, padx=5)
-        self.body_frame.pack(side=TOP, expand=True, fill=BOTH, padx=5)
-        self.tags_frame.pack(side=TOP, expand=True, fill=X, padx=5)
+        self.top_frame.pack(side='top', expand=True, fill='x', padx=5)
+        self.body_frame.pack(side='top', expand=True, fill='both', padx=5)
+        self.tags_frame.pack(side='top', expand=True, fill='x', padx=5)
         
-        self.LAST_BACKUP_LABEL = Label(top_right_frame, text='Last Backup: ')
-        self.LAST_BACKUP = Label(top_right_frame, textvariable=self.last_backup_var)
-        self.LAST_BACKUP.pack(side=RIGHT, padx=3)
-        self.LAST_BACKUP_LABEL.pack(side=RIGHT)
+        self.LAST_BACKUP_LABEL = ttk.Label(top_right_frame, text='Last Backup: ')
+        self.LAST_BACKUP = ttk.Label(top_right_frame, textvariable=self.last_backup_var)
+        self.LAST_BACKUP.pack(side='right', padx=3)
+        self.LAST_BACKUP_LABEL.pack(side='right')
         
-        self.lower_left.pack(side=LEFT, expand=True, fill=X)
-        self.options_frame.pack(side=LEFT)
-        self.lower_right.pack(side=LEFT, expand=True, fill=X)
-        self.lower_frame.pack(side=TOP, expand=True, fill=X)
+        self.lower_left.pack(side='left', expand=True, fill='x')
+        self.options_frame.pack(side='left')
+        self.lower_right.pack(side='left', expand=True, fill='x')
+        self.lower_frame.pack(side='top', expand=True, fill='x', padx=5)
         
-        self.SAVE = Button(self.options_frame, text="Save", command=self.save).grid(row=0, column=0)
-        self.NEW = Button(self.options_frame, text="New Entry", command=self.newEntry).grid(row=0, column=6)
-        self.QUIT = Button(self.options_frame, text="Quit", command=self.destroyApp).grid(row=1, column=0)
-        self.DELETE = Button(self.options_frame, text="Delete", command=self.delete).grid(row=1, column=6)
+        self.SAVE = ttk.Button(self.options_frame, takefocus=0, text="Save", command=self.save)
+        self.SAVE.grid(row=0, column=0)
+        self.NEW = ttk.Button(self.options_frame, takefocus=0, text="New Entry", command=self.newEntry)
+        self.NEW.grid(row=0, column=6)
+        self.QUIT = ttk.Button(self.options_frame, takefocus=0, text="Quit", command=self.destroyApp)
+        self.QUIT.grid(row=1, column=0)
+        self.DELETE = ttk.Button(self.options_frame, takefocus=0, text="Delete", command=self.delete)
+        self.DELETE.grid(row=1, column=6)
         self.jgraph.grid(row=0, column=2, rowspan=2)
         self.attachmanager.grid(row=0, column=4, rowspan=2)
         
-        menubar = Menu(self)
-        pref_menu = Menu(menubar, tearoff=0)
-        pref_menu.add_command(label='Autosave changes on exit', command=self.changeAutoSavePref)
+        menubar = tk.Menu(self)
+        
+        journal_menu = tk.Menu(menubar, tearoff=0)
+        journal_menu.add_command(label='Save All Changes', command=self.writeToDatabase)
+        pref_menu = tk.Menu(journal_menu, tearoff=0)
+        journal_menu.add_cascade(label='Database Preferences', menu=pref_menu)
+        journal_menu.add_command(label='Quit', command=self.destroyApp)
+        
+        entry_menu = tk.Menu(menubar, tearoff=0)
+        entry_menu.add_command(label='Save', command=self.save)
+        entry_menu.add_command(label='Delete', command=self.delete)
+#        pref_menu.add_command(label='Autosave changes on exit', command=self.changeAutoSavePref)
         pref_menu.add_command(label="Select Save Directory", command=self.storage.changeSaveDirectory)
-        backup_menu = Menu(pref_menu, tearoff=0)
+        backup_menu = tk.Menu(pref_menu, tearoff=0)
         backup_menu.add_command(label='Select Backup Directory', command=self.storage.changeBackupDirectory)
-        self.interval_menu = Menu(backup_menu, tearoff=0)
+        self.interval_menu = tk.Menu(backup_menu, tearoff=0)
         self.interval_menu.add_command(label='Immediately', command=self.storage.backupDatabase)
         self.interval_menu.add_radiobutton(label='Day', var=self.backup_interval_var, value=24, command=self.storage.changeBackupSchedule)
         self.interval_menu.add_radiobutton(label='3 Days', var=self.backup_interval_var, value=72, command=self.storage.changeBackupSchedule)
         self.interval_menu.add_radiobutton(label='Week', var=self.backup_interval_var, value=168, command=self.storage.changeBackupSchedule)
         self.interval_menu.add_radiobutton(label='Never', var=self.backup_interval_var, value=-1, command=self.storage.changeBackupSchedule)
 
-        backup_menu.add_cascade(label='Backup Database Every: ', menu=self.interval_menu)
+        backup_menu.add_cascade(label='Backup Database Every...', menu=self.interval_menu)
         pref_menu.add_cascade(label='Backup Options', menu=backup_menu)
         
-        help_menu = Menu(menubar, tearoff=0)
+        help_menu = tk.Menu(menubar, tearoff=0)
         help_menu.add_command(label="About", command=self.createAboutWindow)
         
-        menubar.add_cascade(label="Preferences", menu=pref_menu)
+        menubar.add_cascade(label='Journal', menu=journal_menu)
+        menubar.add_cascade(label="Entry", menu=entry_menu)
         menubar.add_cascade(label="Help", menu=help_menu)
         self.config(menu=menubar)
+        menubar.config(bg='slate gray')
         
         self.protocol("WM_DELETE_WINDOW", self.destroyApp)
         self.bindDateControl()
@@ -204,13 +222,19 @@ class Main(Tk):
             parent.linkChild(self.entry.getDate())
         self.journal.add(self.entry)
         
+    def writeToDatabase(self):
+        self.save()
+        self.storage.saveJournal()
+        
     def delete(self):
-        if self.entry.getDate():
+        date = self.entry.getDate()
+        if not date and not self.body_frame.bodyFieldIsEmpty():
+            self.clearGUI()
+        if date:
             selection = messagebox.askyesno("Delete Entry", "Delete this entry?")
             if selection:
                 self.jgraph.deleteEntry(self.entry.getDate())
                 self.journal.delete(self.entry)
-                entry = JEntry()
                 self.clearGUI()
             else:
                 self.clearGUI()
@@ -225,17 +249,67 @@ class Main(Tk):
             self.save()
             self.updateGUI(entry=JEntry(parent=self.entry.getDate(), tags=self.entry.getTags()))
                 
-class JournalStyle(Style):
-    def __init__(self, master):
-        self.style = Style()
-        self.style.theme_use('vista')
-        Style.__init__(master=master)
+class JournalStyle(ttk.Style):
+    def __init__(self):
+        ttk.Style.__init__(self)
+        self.frame_list = []
+        self.theme_create('shadow', parent='default')
+        self.theme_settings('shadow', {
+                'TButton': {
+                        'configure': {'padding': 3, 'foreground': 'black', 'relief': 'raised',
+                                      'font': 'TkDefaultFont', 'background': 'slate gray', 
+                                      'anchor': 'center', 'borderwidth': 1, 'width':15},
+                        'layout': 
+                            [('Button.border', {'sticky': 'nswe', 'children': 
+                                [('Button.focus', {'sticky': 'nswe', 'children': 
+                                    [('Button.padding', {'sticky': 'nswe', 'children': 
+                                        [('Button.label', {'sticky': 'nswe', 'expand':1})]})]})]})],
+                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
+                                               ('active', 'black')],
+                                'background': [('disabled', 'slate gray'), ('pressed', 'slate gray'), 
+                                               ('active', 'light slate gray')],
+                                'relief': [('pressed', 'flat'), ('!pressed', 'raised')]}},
+                'TLabel': {
+                        'configure': {'background': 'slate gray', 'foreground': 'black'}},
+                'TCombobox': {
+#                        'layout': 
+#                            [('Combobox.border', {'sticky': 'nswe', 'children': 
+#                                [('Combobox.rightdownarrow', {'side': 'right', 'sticky': 'news'}), 
+#                                 ('Combobox.padding', {'expand': '1', 'sticky': 'nswe', 'children': 
+#                                     [('Combobox.focus', {'expand': '1', 'sticky': 'nswe', 'children': 
+#                                         [('Combobox.textarea', {'sticky': 'nswe'})]})]})]})],
+                        'map': {'focusfill': [('readonly', 'focus', 'SystemHighlight')], 
+                                'foreground': [('disabled', 'SystemGrayText'), 
+                                               ('readonly', 'focus', 'black')], 
+                                'selectforeground': [('!focus', 'black'), ('focus', 'black')], 
+                                'selectbackground': [('!focus', 'white'), ('focus', 'gray70')]}},
+                'TCheckbutton': {
+                        'configure': {'indicatoron': 1}},
+                'TScrollbar': {
+                        'configure': {'background': 'slate gray', 'foreground': 'white'}},
+                'UI.TButton': {
+                        'configure': {'width': ''}},
+                'Current.UI.TButton': {
+                        'configure': {'background': 'black', 'foreground': 'white'},
+                        'map': {'foreground': [('active', 'white'), ('pressed', 'white')],
+                                               'background': [('active', 'gray10'), ('pressed', 'gray10')]}},
+                'Bold.UI.TButton': {
+                        'configure': {'font': ('TkDefault', '9', 'bold')}},
+                'Tags.Bold.UI.TButton': {
+                        'configure':{'foreground': 'black', 
+                                     'font': ('TkDefault', '9', 'bold', 'underline')},
+                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
+                                               ('active', 'black')]}}})
+
         
-    def getStyle(self):
-        return self.style
-    
-    def setStyle(self):
-        None
+    def setDayStyle(self):
+        self.theme_use('default')
+        
+    def setNightStyle(self):
+        self.theme_use('shadow')
+        
+    def addFrame(self, frame):
+        self.frame_list.append(frame)
             
         
 app=Main()

@@ -9,7 +9,9 @@ from os import path
 from os import makedirs
 from inspect import getsourcefile
 import pickle
-from tkinter import *
+from tkinter import BooleanVar
+from tkinter import IntVar
+from tkinter import StringVar
 import DateTools
 from tkinter import filedialog as filedialog
 from JObject import JObject

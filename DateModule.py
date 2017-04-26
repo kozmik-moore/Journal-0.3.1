@@ -5,17 +5,16 @@ Created on Mon Mar 27 21:04:38 2017
 @author: Kozmik
 """
 
-from tkinter import *
-from tkinter.ttk import *
-from JObject import *
+import tkinter as tk
+import tkinter.ttk as ttk
 from DateFilter import DateFilter
 import DateTools
 
-class DateFrame(Frame):
+class DateFrame(tk.Frame):
     def __init__(self, master, jentry, jobject, controller, **kw):
         self.master = master
-        Frame.__init__(self, self.master, **kw)
-        inner_frame = Frame(self)
+        tk.Frame.__init__(self, self.master, **kw)
+        inner_frame = tk.Frame(self, bg='slate gray')
         self.jobject = jobject
         self.jentry = jentry
         
@@ -26,18 +25,18 @@ class DateFrame(Frame):
         self.datebox_index={}
         self.updateDateboxIndex()
         
-        self.datebox = Combobox(inner_frame, width=25, state='readonly', justify=CENTER, postcommand=self.updateDateboxList)
-        self.FILTER = Button(inner_frame, text='Filter', command=self.filter.createFilterDialog)
+        self.datebox = ttk.Combobox(inner_frame, state='readonly', width=26, justify='left', postcommand=self.updateDateboxList)
+        self.FILTER = ttk.Button(inner_frame, takefocus=0, text='Filter', command=self.filter.createFilterDialog)
 #        self.datebox.state(statespec='readonly')
         
-        self.style = Style()
-        self.style.configure('NetInd.TLabel', foreground='gray')
-        self.is_linked = StringVar(self, value='Not Linked')
-        self.HASLINKS = Label(inner_frame, width=12, anchor=CENTER, textvariable=self.is_linked, style='NetInd.TLabel')
+        self.style = ttk.Style()
+        self.style.configure('NetInd.TLabel', foreground='dark slate gray')
+        self.is_linked = tk.StringVar(self, value='Not Linked')
+        self.HASLINKS = ttk.Label(inner_frame, anchor='center', width=10, textvariable=self.is_linked, style='NetInd.TLabel')
         
-        self.HASLINKS.pack(side=LEFT)        
-        self.datebox.pack(side=LEFT)
-        self.FILTER.pack(side=LEFT)
+        self.HASLINKS.pack(side=tk.LEFT, expand=True)        
+        self.datebox.pack(side=tk.LEFT)
+        self.FILTER.pack(side=tk.LEFT)
         
         inner_frame.pack()
         
@@ -50,7 +49,7 @@ class DateFrame(Frame):
             self.style.configure('NetInd.TLabel', foreground='blue')
         else:
             self.is_linked.set('Not Linked')
-            self.style.configure('NetInd.TLabel', foreground='gray')
+            self.style.configure('NetInd.TLabel', foreground='dark slate gray')
             
     def updateDateboxList(self):
         combo_list = self.filter.getDatesList()

@@ -6,7 +6,7 @@ Created on Mon Mar 27 02:27:54 2017
 """
 
 from JObject import JObject
-from tkinter import *
+from tkinter import BooleanVar
 
 class TagsManager:
     def __init__(self, journal):

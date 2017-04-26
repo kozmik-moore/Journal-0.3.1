@@ -6,8 +6,8 @@ Created on Mon Mar 27 17:05:45 2017
 """
 
 from TagsManager import TagsManager
-from tkinter import *
-from tkinter.ttk import *
+import tkinter as tk
+import tkinter.ttk as ttk
 import JObject
 from math import ceil
 import copy
@@ -20,49 +20,53 @@ class DateFilter(TagsManager):
             self.jobject = JObject
         self.dateslist = list(self.jobject.getAllDates())
         self.dialog = None
-        self.filter_type = StringVar(name='SearchType', value='OR')
+        self.filter_type = tk.StringVar(name='SearchType', value='OR')
         TagsManager.__init__(self, self.jobject)
         
     def createFilterDialog(self):
-        self.dialog = Toplevel()
+        self.dialog = tk.Toplevel(bg='slate gray')
         self.dialog.title("Filters")
-        top = Frame(self.dialog)
-        middle = Frame(self.dialog)
-        bottom = Frame(self.dialog)
+        top = tk.Frame(self.dialog, bg='slate gray')
+        middle = tk.Frame(self.dialog, bg='slate gray')
+        bottom = tk.Frame(self.dialog, bg='slate gray')
         
-        canvas = Canvas(self.dialog, highlightthickness=0)
+        canvas = tk.Canvas(self.dialog, highlightthickness=0, bg='slate gray')
         tagslist = self.getVarsDict()
         if tagslist:
             for tag in tagslist:
-                tagslist[tag][1] = Checkbutton(master=canvas, text=tag, variable=tagslist[tag][0])
+                tagslist[tag][1] = tk.Checkbutton(master=canvas, text=tag, 
+                        variable=tagslist[tag][0], bg='slate gray')
             tmp = sorted(tagslist.keys())
             row = 10
             col = ceil(len(tagslist) / row)
             grid = [(x, y) for x in range(0, col) for y in range(0, row) ]
             for i in range(0, len(tmp)):
                 x, y = grid[i]
-                tagslist[tmp[i]][1].grid(row=y, column=x, sticky=W)
+                tagslist[tmp[i]][1].grid(row=y, column=x, sticky=tk.W)
         else:
-            message = Message(canvas, text='There is nothing to display.')
+            message = tk.Message(canvas, text='There is nothing to display.')
             message.grid()
         
-        ORPTYPE = Radiobutton(top, text="OR(P)", value="OR(P)", variable=self.filter_type)
-        ORPTYPE.grid(row=0, column=1, sticky=W)
-        ORTYPE = Radiobutton(top, text="OR", value="OR", variable=self.filter_type)
-        ORTYPE.grid(row=0, column=0, sticky=W)
-        ANDTYPE = Radiobutton(top, text="AND", value="AND", variable=self.filter_type)
-        ANDTYPE.grid(row=0, column=2, sticky=W)
+        ORPTYPE = tk.Radiobutton(top, text="OR(P)", value="OR(P)", 
+                                 variable=self.filter_type, bg='slate gray')
+        ORPTYPE.grid(row=0, column=1, sticky='w')
+        ORTYPE = tk.Radiobutton(top, text="OR", value="OR", variable=self.filter_type, 
+                                bg='slate gray')
+        ORTYPE.grid(row=0, column=0, sticky='w')
+        ANDTYPE = tk.Radiobutton(top, text="AND", value="AND", variable=self.filter_type, 
+                                 bg='slate gray')
+        ANDTYPE.grid(row=0, column=2, sticky='w')
         
         canvas.pack()
-        ALL = Button(bottom, text="All", command=self.selectAllBoxes)
-        NONE = Button(bottom, text="None", command=self.deselectAllBoxes)
-        INVERT = Button(bottom, text="Invert", command=self.invertAllBoxes)
-        ALL.pack(side=LEFT)
-        NONE.pack(side=LEFT)
-        INVERT.pack(side=LEFT)
-        top.pack(side=TOP)
-        middle.pack(side=TOP)
-        bottom.pack(side=TOP)
+        ALL = ttk.Button(bottom, text="All", command=self.selectAllBoxes)
+        NONE = ttk.Button(bottom, text="None", command=self.deselectAllBoxes)
+        INVERT = ttk.Button(bottom, text="Invert", command=self.invertAllBoxes)
+        ALL.pack(side=tk.LEFT)
+        NONE.pack(side=tk.LEFT)
+        INVERT.pack(side=tk.LEFT)
+        top.pack(side=tk.TOP)
+        middle.pack(side=tk.TOP)
+        bottom.pack(side=tk.TOP)
         self.dialog.grab_set()
         self.dialog.protocol("WM_DELETE_WINDOW", self.destroyDialog)
         

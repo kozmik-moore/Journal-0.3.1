@@ -6,7 +6,6 @@ Created on Fri Apr 14 13:22:32 2017
 """
 
 import DateTools as DT
-#from os.path import exists
 from os.path import abspath
 from os import mkdir
 from os import remove
@@ -17,13 +16,11 @@ import PIL.Image as PI
 from PIL import ImageTk
 from tkinter import filedialog as filedialog
 from tkinter import messagebox as messagebox
-from tkinter import *
-from tkinter.ttk import *
-#import pdb
+import tkinter as tk
+import tkinter.ttk as ttk
 
-class AttachmentManager(Frame):
-    def __init__(self, master, controller, jobject, jentry):
-#        pdb.set_trace()
+class AttachmentManager(tk.Frame):
+    def __init__(self, master, controller, jobject, jentry, **kw):
         self.master = master
         self.controller = controller
         self.journal = jobject
@@ -46,15 +43,15 @@ class AttachmentManager(Frame):
         except FileExistsError:
             pass
         
-        Frame.__init__(self, self.master)
-        self.NEW = Button(self, text='Add Attachment', command=self.askForAttachment)
-        self.DISPLAY = Button(self, text='Display Attachments', command=self.displayAttachments,
-                              state=DISABLED)
-        self.NEW.pack(fill=X)
-        self.DISPLAY.pack(fill=X)
+        tk.Frame.__init__(self, self.master, **kw)
+        self.NEW = ttk.Button(self, takefocus=0, style='UI.TButton', text='Add Attachment', command=self.askForAttachment)
+        self.DISPLAY = ttk.Button(self, takefocus=0, style='UI.TButton', text='Display Attachments', command=self.displayAttachments,
+                              state=tk.DISABLED)
+        self.NEW.pack(fill=tk.X)
+        self.DISPLAY.pack(fill=tk.X)
         
     def updateGUI(self, jentry):
-        self.DISPLAY.config(state=DISABLED)
+        self.DISPLAY.config(state=tk.DISABLED)
         self.old_attachments = []
         self.new_attachments = []
         self.entry = jentry
@@ -64,13 +61,13 @@ class AttachmentManager(Frame):
             self.path = self.mainpath + DT.getDateFileStorageFormat(date) + '\\'
         attachments = self.entry.getAttachments()
         if attachments:
-            self.DISPLAY.config(state=NORMAL)
+            self.DISPLAY.config(state=tk.NORMAL)
             for filename in attachments:
                 self.old_attachments.append(abspath(self.path + filename))
             
     def addAttachment(self, filepath):
         self.new_attachments.append(filepath)
-        self.DISPLAY.config(state=NORMAL)
+        self.DISPLAY.config(state=tk.NORMAL)
         
     def askForAttachment(self):
         options = {}
@@ -86,29 +83,29 @@ class AttachmentManager(Frame):
         self.buttonlist = []
         
         if self.all_attachments:
-            self.dialog = Toplevel()
+            self.dialog = tk.Toplevel(bg='slate gray')
             self.dialog.title('Attachments')
             self.dialog.maxsize(width=self.dialog.winfo_screenwidth(), height=self.dialog.winfo_screenheight())
             self.dialog.minsize(width=250, height=70)
             
-            self.frame = Frame(self.dialog)
-            topframe = Frame(self.frame)
-            bottomframe = Frame(self.dialog)
+            self.frame = tk.Frame(self.dialog, bg='slate gray')
+            topframe = tk.Frame(self.frame, bg='slate gray')
+            bottomframe = tk.Frame(self.dialog)
             
             for filepath in self.all_attachments:
                 path = abspath(filepath)
                 command = r'explorer /select, ' + '""' + path + '""'
-                button = Button(self.frame, text=filepath.rsplit('\\', 1)[1], command=lambda c=command:
-                    Popen(c))
-                self.buttonlist.append([button, BooleanVar(self.frame, False, button.cget('text')), path])
-                button.pack(expand=1, fill=X, pady=2)
-            self.DELETE = Button(bottomframe, text='Delete Attachment', command=self.deleteAttachment)
-#            separator = Separator(bottomframe)
-#            separator.pack(side=TOP)
-            self.DELETE.pack(side=RIGHT)
-#            topframe.pack(side=TOP, pady=2)
-            self.frame.pack(side=TOP)
-            bottomframe.pack(side=TOP, pady=4)
+                button = ttk.Button(self.frame, style='UI.TButton', 
+                                    text=filepath.rsplit('\\', 1)[1], 
+                                    command=lambda c=command: Popen(c))
+                self.buttonlist.append([button, 
+                                        tk.BooleanVar(self.frame, False, button.cget('text')), path])
+                button.pack(expand=1, fill='x', pady=2)
+            self.DELETE = ttk.Button(bottomframe, takefocus=0, style='Bold.UI.TButton', 
+                                     text='Delete', command=self.deleteAttachment)
+            self.DELETE.pack(side='right', expand=True, fill='x')
+            self.frame.pack(side='top')
+            bottomframe.pack(side='top', pady=4)
             self.dialog.grab_set()
             
             self.dialog.protocol('WM_DELETE_WINDOW', self.destroyDialog)
@@ -123,8 +120,10 @@ class AttachmentManager(Frame):
         self.dialog.title('Delete')
         
         for button in self.buttonlist:
-            checkbutton = Checkbutton(self.frame, text=button[0].cget('text'), var=button[1])
-            checkbutton.pack(side=TOP, expand=True, fill=X, pady=2)
+            checkbutton = tk.Checkbutton(self.frame, text=button[0].cget('text'), var=button[1],
+                                         bg='slate gray', fg='black', activebackground='light slate gray',
+                                         activeforeground='black')
+            checkbutton.pack(side=tk.TOP, expand=True, fill=tk.X, pady=2)
             
         w = self.DELETE.winfo_width()
         h = self.DELETE.winfo_height()
@@ -176,8 +175,6 @@ class AttachmentManager(Frame):
                             self.old_attachments.remove(filepath)
                     else:
                         filepath = self.buttonlist[d][2]
-#                    self.buttonlist[d][0].destroy()
-#                    self.buttonlist[d] = None
                     if filepath in self.new_attachments:
                         self.new_attachments.remove(filepath)
                     self.entry.deleteAttachment(filename)
@@ -185,7 +182,6 @@ class AttachmentManager(Frame):
                     item[0].destroy()
                 self.buttonlist = None
                 self.destroyDialog()
-#                self.buttonlist = list(filter(None, self.buttonlist))                
         
     def destroyDialog(self):
         self.dialog.destroy()
@@ -193,7 +189,7 @@ class AttachmentManager(Frame):
         self.frame = None
         self.buttonlist = None
         if not self.old_attachments and not self.new_attachments:
-            self.DISPLAY.config(state=DISABLED)
+            self.DISPLAY.config(state=tk.DISABLED)
         
     def clearGUI(self, jentry):
         self.entry = jentry
@@ -216,11 +212,4 @@ class AttachmentManager(Frame):
             self.old_attachments = []
             for filename in tmp:
                 self.old_attachments.append(self.path+filename)                
-            self.new_attachments = []
-        
-    def getAttachmentList(self, datetimeobj):
-        date = DT.getDateFileStorageFormat(datetimeobj)
-        
-    def updateAttachments(self):
-        None
-        
+            self.new_attachments = []        

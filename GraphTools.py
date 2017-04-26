@@ -5,8 +5,8 @@ Created on Wed Mar 29 10:02:45 2017
 @author: Kozmik
 """
 
-from tkinter import *
-from tkinter.ttk import *
+import tkinter as tk
+import tkinter.ttk as ttk
 from JObject import *
 import DateTools
 
@@ -17,8 +17,8 @@ HEIGHT = 200
 BUTTON_LENGTH = 180
 BUTTON_HEIGHT = 60
        
-class JGraph(Frame):
-    def __init__(self, master, controller, journal, entry):
+class JGraph(tk.Frame):
+    def __init__(self, master, controller, journal, entry, **kw):
         self.master = master
         self.controller = controller
         self.journal=journal
@@ -45,18 +45,14 @@ class JGraph(Frame):
         self.graph_dialog = None
         self.preview_dialog = None
         
-        self.style = Style()
-        self.style.configure('Bold.TButton', font=('Sans', '8', 'bold'), background='black')
-        self.style.configure('GreyedOut.TButton', background='grey')
-        self.style.configure('Curr.TButton', font=('Sans', '8', 'bold'), background='black', border=10)
-        
-        Frame.__init__(self, self.master)
-        self.NEWLINK = Button(master=self, text="Create Linked Entry", command=self.controller.newLink)
-        self.DISPLAY = Button(master=self, text="Display Linked Entries", 
-                              command=self.creatGraphDialog, style='Greyed.TButton',
-                              state=DISABLED)
-        self.NEWLINK.pack(fill=X)
-        self.DISPLAY.pack(fill=X)
+        self.style = ttk.Style()        
+        self.style.configure('Current.TButton', width='', background='black', border=10)
+        tk.Frame.__init__(self, self.master, **kw)
+        self.NEWLINK = ttk.Button(master=self, style='UI.TButton', takefocus=0, text="Create Linked Entry", command=self.controller.newLink)
+        self.DISPLAY = ttk.Button(master=self, style='UI.TButton', takefocus=0, text="Display Linked Entries", 
+                              command=self.creatGraphDialog, state='disabled')
+        self.NEWLINK.pack(fill='x')
+        self.DISPLAY.pack(fill='x')
         
     def BFS(self, date):
         self.discovered = {}
@@ -145,16 +141,17 @@ class JGraph(Frame):
         self.findTreeDims(self.getRoot(date))
         current = date
         
-        self.graph_dialog = Toplevel()
+        self.graph_dialog = tk.Toplevel()
         self.graph_dialog.title('Graph')
         self.graph_dialog.grab_set()
-        frame = Frame(self.graph_dialog)
-        xbar = Scrollbar(frame, orient=HORIZONTAL)
-        ybar = Scrollbar(frame, orient=VERTICAL)
-        canvas = Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set)
-        xbar.pack(side=BOTTOM, fill=X)
-        ybar.pack(side=RIGHT, fill=Y)
-        frame.pack(expand=True, fill=BOTH)
+        frame = tk.Frame(self.graph_dialog)
+        xbar = ttk.Scrollbar(frame, orient='horizontal')
+        ybar = ttk.Scrollbar(frame, orient='vertical')
+        canvas = tk.Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set, 
+                           bg='light slate gray')
+        xbar.pack(side='bottom', fill='x')
+        ybar.pack(side='right', fill='y')
+        frame.pack(expand=True, fill='both')
         for date in sorted(self.coordinates):
             x=self.coordinates[date][0]*BUTTON_LENGTH
             y=self.coordinates[date][1]*BUTTON_HEIGHT
@@ -168,10 +165,10 @@ class JGraph(Frame):
             x=self.coordinates[date][0]*BUTTON_LENGTH
             y=self.coordinates[date][1]*BUTTON_HEIGHT
             window = canvas.create_window(x,y)
+            button=ttk.Button(canvas, takefocus=0, width=26, text=DateTools.getDateGUIFormat(date), 
+                                  command=lambda date=date:self.previewEntry(date))
             if current == date:
-                button=Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), style='Curr.TButton', command=lambda date=date:self.previewEntry(date))
-            else:
-                button=Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
+                button.config(style='Current.UI.TButton')
             canvas.itemconfig(window, window=button)
         size = (canvas.bbox('all'))
         region = list(size)
@@ -195,7 +192,7 @@ class JGraph(Frame):
         if height < HEIGHT:
             height = HEIGHT
         dims = str(width)+'x'+str(height)
-        canvas.pack(fill=BOTH, expand=True)
+        canvas.pack(fill='both', expand=True)
         self.graph_dialog.geometry(dims)
         self.graph_dialog.update_idletasks()
         xbar.config(command=canvas.xview)
@@ -221,46 +218,48 @@ class JGraph(Frame):
     def previewEntry(self, date):
         entry = self.journal.getEntry(date)
         
-        self.preview_dialog = Toplevel()
+        self.preview_dialog = tk.Toplevel(bg='slate gray')
         self.preview_dialog.title('Preview')
         self.preview_dialog.grab_set()
-        outer_frame = Frame(self.preview_dialog)
-        body_frame = Frame(outer_frame)
-        tags_frame = Frame(outer_frame, height=1)
+        outer_frame = tk.Frame(self.preview_dialog, bg='slate gray')
+        body_frame = tk.Frame(outer_frame, bg='slate gray')
+        tags_frame = tk.Frame(outer_frame, height=1, bg='slate gray')
         
-        date_label = Label(outer_frame, text=DateTools.getDateGUIFormat(date))
+        date_label = ttk.Label(outer_frame, text=DateTools.getDateGUIFormat(date))
         
-        scrollbar = Scrollbar(body_frame)
-        body = Text(body_frame, wrap=WORD, yscrollcommand=scrollbar.set)
+        scrollbar = ttk.Scrollbar(body_frame)
+        body = tk.Text(body_frame, wrap=tk.WORD, yscrollcommand=scrollbar.set, bg='black', 
+                       fg='lime green')
         scrollbar.config(command=body.yview)
-        body.insert(INSERT, entry.getBody())
+        body.insert('insert', entry.getBody())
         body.config(state='disabled')
         
-        tags_label = Label(tags_frame, text='Tags:')
+        tags_label = ttk.Label(tags_frame, text='Tags:')
         tags_list = ''
         tmp = entry.getTags()
         tags_list += tmp.pop(0)
         while len(tmp) != 0:
             tags_list += ', '
             tags_list += tmp.pop(0)
-        tags_scrollbar = Scrollbar(tags_frame)
-        tags = Text(tags_frame, height=1, wrap=WORD, yscrollcommand=tags_scrollbar.set)
+        tags_scrollbar = ttk.Scrollbar(tags_frame)
+        tags = tk.Text(tags_frame, height=1, wrap='word', yscrollcommand=tags_scrollbar.set, 
+                       bg='black', fg='lime green')
         tags_scrollbar.config(command=tags.yview)
-        tags.insert(INSERT, tags_list)
+        tags.insert('insert', tags_list)
         tags.config(state='disabled')
         
-        button = Button(outer_frame, style='Bold.TButton', text='Go To Entry',
+        button = ttk.Button(outer_frame, style='Bold.UI.TButton', text='Go To Entry',
                         command=lambda date=date: self.goToEntry(date))
         
         outer_frame.pack()
         date_label.pack()
         body_frame.pack()
-        body.pack(side=LEFT)
-        scrollbar.pack(side=LEFT, fill=Y)
+        body.pack(side='left')
+        scrollbar.pack(side='left', fill='y')
         tags_frame.pack()
-        tags_label.pack(side=LEFT)
-        tags.pack(side=LEFT)
-        tags_scrollbar.pack(side=LEFT)
+        tags_label.pack(side='left')
+        tags.pack(side='left')
+        tags_scrollbar.pack(side='left')
         button.pack()
         
         self.preview_dialog.protocol('WM_DELETE_WINDOW', self.destroyPreviewDialog)
@@ -285,9 +284,9 @@ class JGraph(Frame):
     def updateGUI(self, entry):
         self.entry = entry
         if not self.entry.getChild() and not self.entry.getParent():
-            self.DISPLAY.config(state=DISABLED)
+            self.DISPLAY.config(state='disabled')
         else:
-            self.DISPLAY.config(state=NORMAL)
+            self.DISPLAY.config(state='normal')
             
     def clearGUI(self, entry):
         self.destroyGraphDialog()
