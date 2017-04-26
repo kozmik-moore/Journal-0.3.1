@@ -147,7 +147,8 @@ class JGraph(tk.Frame):
         frame = tk.Frame(self.graph_dialog)
         xbar = ttk.Scrollbar(frame, orient='horizontal')
         ybar = ttk.Scrollbar(frame, orient='vertical')
-        canvas = tk.Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set)
+        canvas = tk.Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set, 
+                           bg='light slate gray')
         xbar.pack(side='bottom', fill='x')
         ybar.pack(side='right', fill='y')
         frame.pack(expand=True, fill='both')
@@ -164,10 +165,10 @@ class JGraph(tk.Frame):
             x=self.coordinates[date][0]*BUTTON_LENGTH
             y=self.coordinates[date][1]*BUTTON_HEIGHT
             window = canvas.create_window(x,y)
+            button=ttk.Button(canvas, takefocus=0, width=26, text=DateTools.getDateGUIFormat(date), 
+                                  command=lambda date=date:self.previewEntry(date))
             if current == date:
-                button=ttk.Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), style='Current.TButton', command=lambda date=date:self.previewEntry(date))
-            else:
-                button=ttk.Button(canvas, width=26, text=DateTools.getDateGUIFormat(date), command=lambda date=date:self.previewEntry(date))
+                button.config(style='Current.UI.TButton')
             canvas.itemconfig(window, window=button)
         size = (canvas.bbox('all'))
         region = list(size)
@@ -217,19 +218,20 @@ class JGraph(tk.Frame):
     def previewEntry(self, date):
         entry = self.journal.getEntry(date)
         
-        self.preview_dialog = tk.Toplevel()
+        self.preview_dialog = tk.Toplevel(bg='slate gray')
         self.preview_dialog.title('Preview')
         self.preview_dialog.grab_set()
-        outer_frame = tk.Frame(self.preview_dialog)
-        body_frame = tk.Frame(outer_frame)
-        tags_frame = tk.Frame(outer_frame, height=1)
+        outer_frame = tk.Frame(self.preview_dialog, bg='slate gray')
+        body_frame = tk.Frame(outer_frame, bg='slate gray')
+        tags_frame = tk.Frame(outer_frame, height=1, bg='slate gray')
         
         date_label = ttk.Label(outer_frame, text=DateTools.getDateGUIFormat(date))
         
         scrollbar = ttk.Scrollbar(body_frame)
-        body = tk.Text(body_frame, wrap=tk.WORD, yscrollcommand=scrollbar.set)
+        body = tk.Text(body_frame, wrap=tk.WORD, yscrollcommand=scrollbar.set, bg='black', 
+                       fg='lime green')
         scrollbar.config(command=body.yview)
-        body.insert(tk.INSERT, entry.getBody())
+        body.insert('insert', entry.getBody())
         body.config(state='disabled')
         
         tags_label = ttk.Label(tags_frame, text='Tags:')
@@ -240,9 +242,10 @@ class JGraph(tk.Frame):
             tags_list += ', '
             tags_list += tmp.pop(0)
         tags_scrollbar = ttk.Scrollbar(tags_frame)
-        tags = tk.Text(tags_frame, height=1, wrap=tk.WORD, yscrollcommand=tags_scrollbar.set)
+        tags = tk.Text(tags_frame, height=1, wrap='word', yscrollcommand=tags_scrollbar.set, 
+                       bg='black', fg='lime green')
         tags_scrollbar.config(command=tags.yview)
-        tags.insert(tk.INSERT, tags_list)
+        tags.insert('insert', tags_list)
         tags.config(state='disabled')
         
         button = ttk.Button(outer_frame, style='Bold.UI.TButton', text='Go To Entry',

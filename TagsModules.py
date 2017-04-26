@@ -97,7 +97,7 @@ class TagsCanvas(TagsCheckboxManager):
         self.displayed_tags = []
         for tag in self.entry.getTags():
             self.displayed_tags.append(ttk.Button(master=self.canvas, takefocus=0, 
-                                                  text=tag, style='UI.TButton'))
+                                                  text=tag, style='Bold.UI.TButton'))
             self.displayed_tags[-1].config(command=lambda button=self.displayed_tags[-1]:self.updateButton(button))
         col = 10
         row = ceil(len(self.entry.getTags()) / col)
@@ -217,10 +217,10 @@ class TagsFrame(tk.Frame, TagsCanvas):
         self.entry = entry
         tk.Frame.__init__(self, master, **kw)
         ADD = ttk.Button(self, takefocus=0, width=15, text='Add', command=self.createAddDialog, 
-                         style='Bold.UI.TButton')
+                         style='Tags.Bold.UI.TButton')
         TagsCanvas.__init__(self, self, journal)
         TAGS = ttk.Button(self, takefocus=0, width=15, text='Tags:', command=self.createCheckboxDialog, 
-                      style='Bold.UI.TButton')
+                      style='Tags.Bold.UI.TButton')
         TAGS.pack(side='left')
         canvas = self.getCanvas()
         canvas.pack(side='left')

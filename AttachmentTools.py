@@ -83,26 +83,29 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = []
         
         if self.all_attachments:
-            self.dialog = tk.Toplevel()
+            self.dialog = tk.Toplevel(bg='slate gray')
             self.dialog.title('Attachments')
             self.dialog.maxsize(width=self.dialog.winfo_screenwidth(), height=self.dialog.winfo_screenheight())
             self.dialog.minsize(width=250, height=70)
             
-            self.frame = tk.Frame(self.dialog)
-            topframe = tk.Frame(self.frame)
+            self.frame = tk.Frame(self.dialog, bg='slate gray')
+            topframe = tk.Frame(self.frame, bg='slate gray')
             bottomframe = tk.Frame(self.dialog)
             
             for filepath in self.all_attachments:
                 path = abspath(filepath)
                 command = r'explorer /select, ' + '""' + path + '""'
-                button = ttk.Button(self.frame, text=filepath.rsplit('\\', 1)[1], command=lambda c=command:
-                    Popen(c))
-                self.buttonlist.append([button, tk.BooleanVar(self.frame, False, button.cget('text')), path])
-                button.pack(expand=1, fill=tk.X, pady=2)
-            self.DELETE = ttk.Button(bottomframe, text='Delete Attachment', command=self.deleteAttachment)
-            self.DELETE.pack(side=tk.RIGHT)
-            self.frame.pack(side=tk.TOP)
-            bottomframe.pack(side=tk.TOP, pady=4)
+                button = ttk.Button(self.frame, style='UI.TButton', 
+                                    text=filepath.rsplit('\\', 1)[1], 
+                                    command=lambda c=command: Popen(c))
+                self.buttonlist.append([button, 
+                                        tk.BooleanVar(self.frame, False, button.cget('text')), path])
+                button.pack(expand=1, fill='x', pady=2)
+            self.DELETE = ttk.Button(bottomframe, takefocus=0, style='Bold.UI.TButton', 
+                                     text='Delete', command=self.deleteAttachment)
+            self.DELETE.pack(side='right', expand=True, fill='x')
+            self.frame.pack(side='top')
+            bottomframe.pack(side='top', pady=4)
             self.dialog.grab_set()
             
             self.dialog.protocol('WM_DELETE_WINDOW', self.destroyDialog)
@@ -117,7 +120,9 @@ class AttachmentManager(tk.Frame):
         self.dialog.title('Delete')
         
         for button in self.buttonlist:
-            checkbutton = ttk.Checkbutton(self.frame, text=button[0].cget('text'), var=button[1])
+            checkbutton = tk.Checkbutton(self.frame, text=button[0].cget('text'), var=button[1],
+                                         bg='slate gray', fg='black', activebackground='light slate gray',
+                                         activeforeground='black')
             checkbutton.pack(side=tk.TOP, expand=True, fill=tk.X, pady=2)
             
         w = self.DELETE.winfo_width()

@@ -264,22 +264,42 @@ class JournalStyle(ttk.Style):
                                 [('Button.focus', {'sticky': 'nswe', 'children': 
                                     [('Button.padding', {'sticky': 'nswe', 'children': 
                                         [('Button.label', {'sticky': 'nswe', 'expand':1})]})]})]})],
-                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'white'), 
+                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
                                                ('active', 'black')],
                                 'background': [('disabled', 'slate gray'), ('pressed', 'slate gray'), 
                                                ('active', 'light slate gray')],
                                 'relief': [('pressed', 'flat'), ('!pressed', 'raised')]}},
                 'TLabel': {
                         'configure': {'background': 'slate gray', 'foreground': 'black'}},
-                'TCombobox': {},
+                'TCombobox': {
+#                        'layout': 
+#                            [('Combobox.border', {'sticky': 'nswe', 'children': 
+#                                [('Combobox.rightdownarrow', {'side': 'right', 'sticky': 'news'}), 
+#                                 ('Combobox.padding', {'expand': '1', 'sticky': 'nswe', 'children': 
+#                                     [('Combobox.focus', {'expand': '1', 'sticky': 'nswe', 'children': 
+#                                         [('Combobox.textarea', {'sticky': 'nswe'})]})]})]})],
+                        'map': {'focusfill': [('readonly', 'focus', 'SystemHighlight')], 
+                                'foreground': [('disabled', 'SystemGrayText'), 
+                                               ('readonly', 'focus', 'black')], 
+                                'selectforeground': [('!focus', 'black'), ('focus', 'black')], 
+                                'selectbackground': [('!focus', 'white'), ('focus', 'gray70')]}},
                 'TCheckbutton': {
                         'configure': {'indicatoron': 1}},
                 'TScrollbar': {
                         'configure': {'background': 'slate gray', 'foreground': 'white'}},
                 'UI.TButton': {
                         'configure': {'width': ''}},
+                'Current.UI.TButton': {
+                        'configure': {'background': 'black', 'foreground': 'white'},
+                        'map': {'foreground': [('active', 'white'), ('pressed', 'white')],
+                                               'background': [('active', 'gray10'), ('pressed', 'gray10')]}},
                 'Bold.UI.TButton': {
-                        'configure': {'font': ('TkDefault', '8', 'bold')}}})
+                        'configure': {'font': ('TkDefault', '9', 'bold')}},
+                'Tags.Bold.UI.TButton': {
+                        'configure':{'foreground': 'black', 
+                                     'font': ('TkDefault', '9', 'bold', 'underline')},
+                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
+                                               ('active', 'black')]}}})
 
         
     def setDayStyle(self):
