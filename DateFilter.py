@@ -87,13 +87,19 @@ class DateFilter(TagsManager):
             for tag in states_list:
                 if not states_list[tag]:
                     filtered_tags.append(tag)
-            filter_flag = False
             for date in sorted(self.dateslist):
-                for tag in self.journal.getEntry(date).getTags():
+                filter_flag = False
+                tags = self.journal.getEntry(date).getTags()
+                i = 0
+                j = len(tags)
+                tag = tags[i]
+                while i < j and not filter_flag:
+                    tag = tags[i]
                     if tag in filtered_tags:
                         filter_flag = True
-                    if not filter_flag:
-                        self.dateslist.remove(date)
+                    i += 1
+                if filter_flag:
+                    self.dateslist.remove(date)
         elif self.filter_type.get() == 'OR':
             for tag in states_list:
                 if states_list[tag]:
