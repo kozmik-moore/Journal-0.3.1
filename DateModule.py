@@ -165,6 +165,7 @@ class DateFilter(TagSelectionManager):
         top.pack(side=tk.TOP)
         middle.pack(side=tk.TOP)
         bottom.pack(side=tk.TOP)
+        self.dialog.update_idletasks()
         self.dialog.grab_set()
         self.dialog.protocol("WM_DELETE_WINDOW", self.destroyDialog)
         

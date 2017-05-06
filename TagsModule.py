@@ -268,6 +268,7 @@ class TagsFrame(tk.Frame, TagsManager):
         for i in range(0, len(tmp)):
             x, y = grid[i]
             self.tags_var[tmp[i]][1].grid(row=y, column=x, sticky='w')
+        self.dialog.update_idletasks()
         canvas.pack(padx=10, pady=7, side='left')
         self.dialog.grab_set()
         self.dialog.focus_force()
@@ -326,6 +327,6 @@ class TagsFrame(tk.Frame, TagsManager):
         self.removeTag(tag)
         
     def updateTag(self, oldtag, newtag):
-        self.addTag(newtag)
+        self.addTag(newtag.strip())
         self.removeTag(oldtag)
         self.compareActiveStringFirst()
