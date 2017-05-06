@@ -14,7 +14,6 @@ import copy
 
 class DateFilter(TagsManager):
     def __init__(self, jobject):
-#        self.master = master
         self.jobject = jobject
         if not self.jobject:
             self.jobject = JObject
@@ -22,6 +21,7 @@ class DateFilter(TagsManager):
         self.dialog = None
         self.filter_type = tk.StringVar(name='SearchType', value='OR')
         TagsManager.__init__(self, self.jobject)
+        self.id = 'DF.'
         
     def createFilterDialog(self):
         self.dialog = tk.Toplevel(bg='slate gray')
@@ -31,6 +31,7 @@ class DateFilter(TagsManager):
         bottom = tk.Frame(self.dialog, bg='slate gray')
         
         canvas = tk.Canvas(self.dialog, highlightthickness=0, bg='slate gray')
+        canvas.pack()
         tagslist = self.getVarsDict()
         if tagslist:
             for tag in tagslist:
@@ -57,7 +58,6 @@ class DateFilter(TagsManager):
                                  bg='slate gray')
         ANDTYPE.grid(row=0, column=2, sticky='w')
         
-        canvas.pack()
         ALL = ttk.Button(bottom, text="All", command=self.selectAllBoxes)
         NONE = ttk.Button(bottom, text="None", command=self.deselectAllBoxes)
         INVERT = ttk.Button(bottom, text="Invert", command=self.invertAllBoxes)

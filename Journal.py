@@ -8,8 +8,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
 from JObject import JEntry
-from BodyModules import BodyFrame
-from TagsModules import TagsFrame
+from BodyModule import BodyFrame
+from TagsModule import TagsFrame
 from Storage import Storage
 from DateModule import DateFrame
 import DateTools
@@ -228,16 +228,16 @@ class Main(tk.Tk):
         
     def delete(self):
         date = self.entry.getDate()
-        if not date and not self.body_frame.bodyFieldIsEmpty():
+        if not date:
             self.clearGUI()
-        if date:
+        else:
             selection = messagebox.askyesno("Delete Entry", "Delete this entry?")
             if selection:
                 self.jgraph.deleteEntry(self.entry.getDate())
                 self.journal.delete(self.entry)
                 self.clearGUI()
-            else:
-                self.clearGUI()
+#            else:
+#                self.clearGUI()
             
     def newEntry(self):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():
