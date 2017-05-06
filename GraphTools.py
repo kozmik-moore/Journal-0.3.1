@@ -291,5 +291,3 @@ class JGraph(tk.Frame):
     def clearGUI(self, entry):
         self.destroyGraphDialog()
         self.updateGUI(entry)
-        
-            
