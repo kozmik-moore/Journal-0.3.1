@@ -8,7 +8,6 @@ Created on Mon Mar 27 17:05:45 2017
 from TagsManager import TagsManager
 import tkinter as tk
 import tkinter.ttk as ttk
-import JObject
 from math import ceil
 import copy
 
