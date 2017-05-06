@@ -14,14 +14,12 @@ import copy
 
 class DateFilter(TagsManager):
     def __init__(self, jobject):
-#        self.master = master
-        self.jobject = jobject
-        if not self.jobject:
-            self.jobject = JObject
-        self.dateslist = list(self.jobject.getAllDates())
+        TagsManager.__init__(self, jobject)
+        self.dateslist = list(self.journal.getAllDates())
         self.dialog = None
         self.filter_type = tk.StringVar(name='SearchType', value='OR')
-        TagsManager.__init__(self, self.jobject)
+        self.islinked = tk.BooleanVar(name='IsLinkedFilter', value=False)
+        self.num_entries = tk.IntVar(name='NumberOfEntries', value=len(self.dateslist))
         
     def createFilterDialog(self):
         self.dialog = tk.Toplevel(bg='slate gray')
@@ -47,26 +45,29 @@ class DateFilter(TagsManager):
             message = tk.Message(canvas, text='There is nothing to display.')
             message.grid()
         
-        ORPTYPE = tk.Radiobutton(top, text="OR(P)", value="OR(P)", 
+        ORPTYPE = tk.Radiobutton(middle, text="OR(P)", value="OR(P)", 
                                  variable=self.filter_type, bg='slate gray')
-        ORPTYPE.grid(row=0, column=1, sticky='w')
-        ORTYPE = tk.Radiobutton(top, text="OR", value="OR", variable=self.filter_type, 
+        ORPTYPE.grid(row=1, column=1)
+        ORTYPE = tk.Radiobutton(middle, text="OR", value="OR", variable=self.filter_type, 
                                 bg='slate gray')
-        ORTYPE.grid(row=0, column=0, sticky='w')
-        ANDTYPE = tk.Radiobutton(top, text="AND", value="AND", variable=self.filter_type, 
+        ORTYPE.grid(row=1, column=0)
+        ANDTYPE = tk.Radiobutton(middle, text="AND", value="AND", variable=self.filter_type, 
                                  bg='slate gray')
-        ANDTYPE.grid(row=0, column=2, sticky='w')
+        ANDTYPE.grid(row=1, column=2)
         
         canvas.pack()
         ALL = ttk.Button(bottom, text="All", command=self.selectAllBoxes)
         NONE = ttk.Button(bottom, text="None", command=self.deselectAllBoxes)
         INVERT = ttk.Button(bottom, text="Invert", command=self.invertAllBoxes)
-        ALL.pack(side=tk.LEFT)
-        NONE.pack(side=tk.LEFT)
-        INVERT.pack(side=tk.LEFT)
-        top.pack(side=tk.TOP)
-        middle.pack(side=tk.TOP)
-        bottom.pack(side=tk.TOP)
+        ISLINKED = tk.Checkbutton(middle, text='Is Linked', variable=self.islinked, 
+                                  bg='slate gray')
+        ALL.grid(row=1, column=0)
+        NONE.grid(row=1, column=1)
+        INVERT.grid(row=1, column=2)
+        ISLINKED.grid(row=1, column=3)
+        top.pack(side='top', expand=1, fill='x')
+        middle.pack(side='top')
+        bottom.pack(side='top')
         self.dialog.grab_set()
         self.dialog.protocol("WM_DELETE_WINDOW", self.destroyDialog)
         
@@ -75,17 +76,21 @@ class DateFilter(TagsManager):
         self.dialog = None
         self.filterDates()
         
+    def sortLinked(self):
+        self.dialog.destroy()
+        self.dialog = None
+        
     def filterDates(self):
         filtered_tags = []
         states_list = self.getStates()
-        self.dateslist = list(self.jobject.getAllDates())
+        self.dateslist = list(self.journal.getAllDates())
         if self.filter_type.get() == 'OR(P)':
             for tag in states_list:
                 if not states_list[tag]:
                     filtered_tags.append(tag)
             filter_flag = False
             for date in sorted(self.dateslist):
-                for tag in self.jobject.getEntry(date).getTags():
+                for tag in self.journal.getEntry(date).getTags():
                     if tag in filtered_tags:
                         filter_flag = True
                     if not filter_flag:
@@ -112,7 +117,14 @@ class DateFilter(TagsManager):
                     for tag in self.journal.getEntry(date).getTags():
                         if tag not in filtered_tags:
                             if date in self.dateslist:
-                                self.dateslist.remove(date)        
+                                self.dateslist.remove(date)
+        if self.islinked.get():
+            tmp = copy.copy(self.dateslist)
+            for date in tmp:
+                entry = self.journal.getEntry(date)
+                if not entry.hasLinks():
+                    self.dateslist.remove(date)
+        self.num_entries.set(len(self.dateslist))
         
     def getDatesList(self):
         self.updateVarsDict()
@@ -121,6 +133,9 @@ class DateFilter(TagsManager):
         
     def getTagsList(self):
         return self.tagslist
+    
+    def getNumEntryVar(self):
+        return self.num_entries
         
     def selectAllBoxes(self):
         for tag in self.vars:
