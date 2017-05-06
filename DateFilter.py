@@ -5,7 +5,7 @@ Created on Mon Mar 27 17:05:45 2017
 @author: Kozmik
 """
 
-from TagsManager import TagsManager
+from TagTools import TagSelectionManager
 import tkinter as tk
 import tkinter.ttk as ttk
 from math import ceil
@@ -13,7 +13,7 @@ import copy
 
 class DateFilter(TagsManager):
     def __init__(self, jobject):
-        TagsManager.__init__(self, jobject)
+        TagSelectionManager.__init__(self, jobject, True, 'DF.')
         self.dateslist = list(self.journal.getAllDates())
         self.dialog = None
         self.filter_type = tk.StringVar(name='SearchType', value='OR')
@@ -28,6 +28,7 @@ class DateFilter(TagsManager):
         bottom = tk.Frame(self.dialog, bg='slate gray')
         
         canvas = tk.Canvas(self.dialog, highlightthickness=0, bg='slate gray')
+        canvas.pack()
         tagslist = self.getVarsDict()
         if tagslist:
             for tag in tagslist:
@@ -54,7 +55,6 @@ class DateFilter(TagsManager):
                                  bg='slate gray')
         ANDTYPE.grid(row=1, column=2)
         
-        canvas.pack()
         ALL = ttk.Button(bottom, text="All", command=self.selectAllBoxes)
         NONE = ttk.Button(bottom, text="None", command=self.deselectAllBoxes)
         INVERT = ttk.Button(bottom, text="Invert", command=self.invertAllBoxes)
