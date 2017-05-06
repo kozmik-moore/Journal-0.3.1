@@ -80,6 +80,12 @@ class JEntry:
         
     def getAttachments(self):
         return self.attachments
+    
+    def hasLinks(self):
+        linked = False
+        if self.parent or self.child:
+            linked = True
+        return linked
         
     def __deepcopy__(self):
         new = JEntry(self.date, self.body, self.tags, self.parent)

@@ -28,16 +28,19 @@ class DateFrame(tk.Frame):
         self.datebox_index={}
         self.updateDateboxIndex()
         
-        self.datebox = ttk.Combobox(inner_frame, state='readonly', width=26, justify='left', postcommand=self.updateDateboxList)
-        self.FILTER = ttk.Button(inner_frame, takefocus=0, text='Filter', command=self.filter.createFilterDialog)
+        self.datebox = ttk.Combobox(inner_frame, state='readonly', width=26, 
+                                    justify='left', postcommand=self.updateDateboxList)
+        self.FILTER = ttk.Button(inner_frame, takefocus=0, text='Filter', 
+                                 command=self.filter.createFilterDialog)
 #        self.datebox.state(statespec='readonly')
         
         self.style = ttk.Style()
         self.style.configure('NetInd.TLabel', foreground='dark slate gray')
-        self.is_linked = tk.StringVar(self, value='Not Linked')
-        self.HASLINKS = ttk.Label(inner_frame, anchor='center', width=10, textvariable=self.is_linked, style='NetInd.TLabel')
+        self.num_entries = self.filter.getNumEntryVar()
+        self.NUMLINKS = ttk.Label(inner_frame, anchor='center', width=10, 
+                                  textvariable=self.num_entries)
         
-        self.HASLINKS.pack(side=tk.LEFT, expand=True)        
+        self.NUMLINKS.pack(side=tk.LEFT, expand=True)        
         self.datebox.pack(side=tk.LEFT)
         self.FILTER.pack(side=tk.LEFT)
         
@@ -45,14 +48,6 @@ class DateFrame(tk.Frame):
         
         if self.jentry.getDate():
             self.updateGUI(self.jentry)
-        
-    def setNetworkedIndicator(self):
-        if self.jentry.getParent() or self.jentry.getChild():
-            self.is_linked.set('Linked')
-            self.style.configure('NetInd.TLabel', foreground='blue')
-        else:
-            self.is_linked.set('Not Linked')
-            self.style.configure('NetInd.TLabel', foreground='dark slate gray')
             
     def updateDateboxList(self):
         combo_list = self.filter.getDatesList()
@@ -81,14 +76,12 @@ class DateFrame(tk.Frame):
             self.datebox.set('')
             self.program_date = None
             self.user_date = ''
-        self.setNetworkedIndicator()
         
     def clearGUI(self, entry):
         self.jentry = entry
         self.datebox.set('')
         self.program_date = 0
-        self.user_date = ''
-        self.setNetworkedIndicator()       
+        self.user_date = ''       
         
     def save(self):
         if not self.jentry.getDate():
