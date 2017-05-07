@@ -198,6 +198,7 @@ class JGraph(tk.Frame):
         xbar.config(command=canvas.xview)
         ybar.config(command=canvas.yview)
         canvas.xview_moveto(.15)
+        self.graph_dialog.focus_force()
         self.graph_dialog.protocol("WM_DELETE_WINDOW", self.destroyGraphDialog)
         
     def destroyGraphDialog(self):
@@ -261,7 +262,7 @@ class JGraph(tk.Frame):
         tags.pack(side='left')
         tags_scrollbar.pack(side='left')
         button.pack()
-        
+        self.preview_dialog.focus_force()
         self.preview_dialog.protocol('WM_DELETE_WINDOW', self.destroyPreviewDialog)
         
     def destroyPreviewDialog(self):
