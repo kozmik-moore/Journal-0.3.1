@@ -284,7 +284,7 @@ class JGraph(tk.Frame):
         
     def updateGUI(self, entry):
         self.entry = entry
-        if not self.entry.getChild() and not self.entry.getParent():
+        if (not self.entry.getChild() and not self.entry.getParent()) or not self.entry.getDate():
             self.DISPLAY.config(state='disabled')
         else:
             self.DISPLAY.config(state='normal')

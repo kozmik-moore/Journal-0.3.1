@@ -149,6 +149,8 @@ class Main(tk.Tk):
         pref_menu.add_cascade(label='Backup Options', menu=backup_menu)
         
         help_menu = tk.Menu(menubar, tearoff=0)
+        help_menu.add_command(label='Help', command=self.createHelpWindow)
+        help_menu.add_command(label='Keyboard Shortcuts', command=self.createShortcutsWindow)
         help_menu.add_command(label="About", command=self.createAboutWindow)
         
         menubar.add_cascade(label='Journal', menu=journal_menu)
@@ -161,9 +163,15 @@ class Main(tk.Tk):
         self.bindDateControl()
         self.storage.runBackup()
         self.updateGUI(entry=self.entry)
+        
+    def createShortcutsWindow(self):
+        None
+        
+    def createHelpWindow(self):
+        None
                 
     def createAboutWindow(self):
-        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda 4.3.1 Suite (Python 3.6)"
+        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
         main = messagebox.Message(title="About", message=message)
         main.show()
         
@@ -220,6 +228,7 @@ class Main(tk.Tk):
             date = self.entry.getParent()
             parent = self.journal.getEntry(date)
             parent.linkChild(self.entry.getDate())
+            self.jgraph.updateGUI(self.entry)
         self.journal.add(self.entry)
         
     def writeToDatabase(self):
