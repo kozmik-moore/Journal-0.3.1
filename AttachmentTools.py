@@ -81,24 +81,24 @@ class AttachmentManager(tk.Frame):
                 if len(attachments) > 1:
                     message = 'The directory for this journal entry could ' +\
                     'not be located. The following attachments are missing: '
-                    message += attachments[0]
+                    message += attachments[0] + '. Do you want to restore them?'
                     for item in range(1, len(attachments)):
                         message += ', ' + attachments[item]
                 else:
                     message = 'The directory for this journal entry could ' +\
                     'not be located. The following attachment is missing: '
-                    message += attachments[0]
-                message += ' .Do you want to restore them?'
+                    message += attachments[0] + '. Do you want to restore it?'
                 choice = messagebox.askyesno(title='Missing Directory', 
                                              message=message)
                 if choice:
                     self.currentpath = path
+                    mkdir(self.currentpath)
                     self.askForAttachment()
                 else:
                     for item in attachments:
                         self.entry.deleteAttachment(item)
                     self.currentpath = self.temppath
-                mkdir(self.currentpath)
+                    mkdir(self.currentpath)
                 self.DISPLAY.config(state=tk.DISABLED)
             else:
                 self.currentpath = path
@@ -294,10 +294,11 @@ class AttachmentManager(tk.Frame):
         dest = self.parentpath + DT.getDateFileStorageFormat(date)
 #        tmp = False
         old = self.entry.getAttachments()
+        new = listdir(src)
 #        if not old:
-        if exists(src):
+        if exists(src) and new:
 #            tmp = True
-            new = listdir(src)
+#            new = listdir(src)
             for item in new:
                 if item not in old:
                     self.entry.addAttachment(item)
