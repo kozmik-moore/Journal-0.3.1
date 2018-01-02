@@ -24,47 +24,48 @@ class Main(tk.Tk):
         w, h = self.winfo_screenwidth(), self.winfo_screenheight()
         self.geometry("%dx%d+0+0" % (w*.95, h*.8))
         self.config(background='slate gray')
+#        self.overrideredirect(1)
         self.title('Journal')
         self.storage = Storage()
         self.storage.LoadIniFile()
         self.storage.openJournalFile()
         self.journal = self.storage.getJournal()
-        self.entry = None
-        if self.journal.isEmpty():
-            date = DateTools.getCurrentDate()
-            body = textwrap.dedent("Welcome!\n\nThis entry is to provide a little guidance if you happen "
-            "to have any questions. Keep in mind that this is a work in progress, so...bugs ahead! "
-            "That being said, onto the tutorial."
-            "\n\nThis panel you are reading from is where you write entries. If you want to make a new entry, "
-            "click the button marked \"New Entry\"."
-            "\n\nClicking the button marked \"Linked Entry\" from an entry that is already saved "
-            "will make a new entry that is \"connected\" to the previous one. The \"Tags\" button "
-            "allows you to select and deselect tags to add to your entry and the \"Filter\" button "
-            "lets you filter dates from the datebar by their associated tags."
-            "\n\nWhen you open the Filter dialog, there will be three radiobutton marked \"OR\", "
-            "\"AND\", and \"OR(P)\". Selecting tags while the \"OR\" button is selected "
-            "narrows dates to any containing at least those tags. \"AND\" returns dates that "
-            "have those tags and only those tags. \"OR(P)\" gives those dates that have at "
-            "least one of those tags and not any dates that have tags which are not selected. "
-            "(For those of you who know, think \"power sets\".)"
-            "\n\n\"Save\" saves your entries and \"Delete\" deletes them from the database. "
-            "\"Quit\" exits the application, saving all changes on the way out. Closing the "
-            "window with the \"X\" in the corner will accomplish the same thing."
-            "\nThe \"Display Linked Entries\" button is for a future implementation where you "
-            "will have a visual representation of your interconnected thoughts. This is the "
-            "primary reason I developed this, so that you could see how your thoughts are "
-            "networked together as they develop over time."
-            "\n\nThe \"Preferences\" menu allows you to change your database location, "
-            "backup location, how often the app will backup the database, and contains an "
-            "option to backup immediately."
-            "\n\nThe \"Help\" menu has details of where I can be contacted, if further "
-            "questions arise or you want to look at the code."
-            "\n\nGood writing!")
-            tags = ['Welcome']
-            self.entry = JEntry(date, body, tags)
-            self.journal.add(self.entry)
-        else:
-            self.entry = JEntry()
+        self.entry = JEntry()
+#        if self.journal.isEmpty():
+#            date = DateTools.getCurrentDate()
+#            body = textwrap.dedent("Welcome!\n\nThis entry is to provide a little guidance if you happen "
+#            "to have any questions. Keep in mind that this is a work in progress, so...bugs ahead! "
+#            "That being said, onto the tutorial."
+#            "\n\nThis panel you are reading from is where you write entries. If you want to make a new entry, "
+#            "click the button marked \"New Entry\"."
+#            "\n\nClicking the button marked \"Linked Entry\" from an entry that is already saved "
+#            "will make a new entry that is \"connected\" to the previous one. The \"Tags\" button "
+#            "allows you to select and deselect tags to add to your entry and the \"Filter\" button "
+#            "lets you filter dates from the datebar by their associated tags."
+#            "\n\nWhen you open the Filter dialog, there will be three radiobutton marked \"OR\", "
+#            "\"AND\", and \"OR(P)\". Selecting tags while the \"OR\" button is selected "
+#            "narrows dates to any containing at least those tags. \"AND\" returns dates that "
+#            "have those tags and only those tags. \"OR(P)\" gives those dates that have at "
+#            "least one of those tags and not any dates that have tags which are not selected. "
+#            "(For those of you who know, think \"power sets\".)"
+#            "\n\n\"Save\" saves your entries and \"Delete\" deletes them from the database. "
+#            "\"Quit\" exits the application, saving all changes on the way out. Closing the "
+#            "window with the \"X\" in the corner will accomplish the same thing."
+#            "\nThe \"Display Linked Entries\" button is for a future implementation where you "
+#            "will have a visual representation of your interconnected thoughts. This is the "
+#            "primary reason I developed this, so that you could see how your thoughts are "
+#            "networked together as they develop over time."
+#            "\n\nThe \"Preferences\" menu allows you to change your database location, "
+#            "backup location, how often the app will backup the database, and contains an "
+#            "option to backup immediately."
+#            "\n\nThe \"Help\" menu has details of where I can be contacted, if further "
+#            "questions arise or you want to look at the code."
+#            "\n\nGood writing!")
+#            tags = ['Welcome']
+#            self.entry = JEntry(date, body, tags)
+#            self.journal.add(self.entry)
+#        else:
+#            self.entry = JEntry()
             
         style = JournalStyle()
         style.setNightStyle()
@@ -89,7 +90,7 @@ class Main(tk.Tk):
         self.lower_right = tk.Frame(self.lower_frame, bg='slate gray')
         self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry, 
                              bg='slate gray')
-        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, 
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.storage.getPath(), self.journal, 
                                                self.entry, bg='slate gray')
 
 #        top_left_frame.grid(row=0, column=1)
@@ -123,22 +124,22 @@ class Main(tk.Tk):
         self.jgraph.grid(row=0, column=2, rowspan=2)
         self.attachmanager.grid(row=0, column=4, rowspan=2)
         
-        menubar = tk.Menu(self)
+        menubar = tk.Menu(self, bg='slate gray')
         
-        journal_menu = tk.Menu(menubar, tearoff=0)
+        journal_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
         journal_menu.add_command(label='Save All Changes', command=self.writeToDatabase)
-        pref_menu = tk.Menu(journal_menu, tearoff=0)
+        pref_menu = tk.Menu(journal_menu, bg='slate gray', tearoff=0)
         journal_menu.add_cascade(label='Database Preferences', menu=pref_menu)
         journal_menu.add_command(label='Quit', command=self.destroyApp)
         
-        entry_menu = tk.Menu(menubar, tearoff=0)
+        entry_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
         entry_menu.add_command(label='Save', command=self.save)
         entry_menu.add_command(label='Delete', command=self.delete)
 #        pref_menu.add_command(label='Autosave changes on exit', command=self.changeAutoSavePref)
         pref_menu.add_command(label="Select Save Directory", command=self.storage.changeSaveDirectory)
-        backup_menu = tk.Menu(pref_menu, tearoff=0)
+        backup_menu = tk.Menu(pref_menu, bg='slate gray', tearoff=0)
         backup_menu.add_command(label='Select Backup Directory', command=self.storage.changeBackupDirectory)
-        self.interval_menu = tk.Menu(backup_menu, tearoff=0)
+        self.interval_menu = tk.Menu(backup_menu, bg='slate gray', tearoff=0)
         self.interval_menu.add_command(label='Immediately', command=self.storage.backupDatabase)
         self.interval_menu.add_radiobutton(label='Day', var=self.backup_interval_var, value=24, command=self.storage.changeBackupSchedule)
         self.interval_menu.add_radiobutton(label='3 Days', var=self.backup_interval_var, value=72, command=self.storage.changeBackupSchedule)
@@ -148,7 +149,8 @@ class Main(tk.Tk):
         backup_menu.add_cascade(label='Backup Database Every...', menu=self.interval_menu)
         pref_menu.add_cascade(label='Backup Options', menu=backup_menu)
         
-        help_menu = tk.Menu(menubar, tearoff=0)
+
+        help_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
         help_menu.add_command(label='Help', command=self.createHelpWindow)
         help_menu.add_command(label='Keyboard Shortcuts', command=self.createShortcutsWindow)
         help_menu.add_command(label="About", command=self.createAboutWindow)
@@ -178,6 +180,7 @@ class Main(tk.Tk):
     def destroyApp(self):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():
             self.save()
+        self.attachmanager.clean()
         self.storage.saveJournal(self.journal)
         self.storage.saveIniFile()
         self.destroy()
@@ -244,6 +247,7 @@ class Main(tk.Tk):
             if selection:
                 self.jgraph.deleteEntry(self.entry.getDate())
                 self.journal.delete(self.entry)
+                self.attachmanager.delete()
                 self.clearGUI()
 #            else:
 #                self.clearGUI()

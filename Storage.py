@@ -3,6 +3,10 @@
 Created on Sun Mar 26 18:18:35 2017
 
 @author: Kozmik
+
+This module manages the journal database and .ini file(s) and performs checks on
+whether the Journal script is operating in a bundle (e.g. .exe) or freely in a 
+Python environment.
 """
 
 from os import path
@@ -15,10 +19,13 @@ from tkinter import StringVar
 import DateTools
 from tkinter import filedialog as filedialog
 from JObject import JObject
+import sys
 
 class Storage:
     def __init__(self, master=None):
-        self.config_path = path.abspath(getsourcefile(lambda:0)).strip('Storage.py')
+#        self.config_path = path.abspath(getsourcefile(lambda:0)).strip('Storage.py')
+        self.config_path = ''
+        self.getWorkingDir()
         self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 'LAST BACKUP': None, 'BACKUP INTERVAL': 168, 'AUTOSAVE': False}
         self.journal = None
         self.master = master
@@ -30,11 +37,11 @@ class Storage:
          
     def LoadIniFile(self):
         try:
-            fin = open(self.config_path + "Journal.ini", "rb")
+            fin = open(self.config_path + "/Journal.ini", "rb")
             self.ini = pickle.load(fin)
         except FileNotFoundError:
             self.changeSaveDirectory()
-            fin = open(self.config_path + "Journal.ini", "wb")
+            fin = open(self.config_path + "/Journal.ini", "wb")
             pickle.dump(self.ini, fin)
         fin.close()
         self.auto_save.set(self.ini['AUTOSAVE'])
@@ -46,10 +53,10 @@ class Storage:
         
     def openJournalFile(self):
         try:
-            fin = open(self.ini['SAVE LOCATION'] + "journal_db", "rb")
+            fin = open(self.ini['SAVE LOCATION'] + "/journal_db", "rb")
             self.journal = pickle.load(fin)
         except FileNotFoundError:
-            fin = open(self.ini['SAVE LOCATION'] + "journal_db", "wb")
+            fin = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
             self.journal = JObject()
         fin.close()
         
@@ -104,10 +111,10 @@ class Storage:
         passed to the journal object) and updates associated variables"""
         
         if self.ini['BACKUP LOCATION']:
-            fout = open(self.ini['BACKUP LOCATION'] + "journal_db", "wb")
+            fout = open(self.ini['BACKUP LOCATION'] + "/journal_db", "wb")
         else:
             self.changeBackupDirectory()
-            fout = open(self.ini['BACKUP LOCATION'] + "journal_db", "wb")
+            fout = open(self.ini['BACKUP LOCATION'] + "/journal_db", "wb")
         pickle.dump(self.journal, fout)
         fout.close()
         date = DateTools.getCurrentDate()
@@ -150,7 +157,7 @@ class Storage:
                 self.backupDatabase()
     
     def saveIniFile(self):
-        fout = open(self.config_path + 'Journal.ini', 'wb')
+        fout = open(self.config_path + '/Journal.ini', 'wb')
         pickle.dump(self.ini, fout)
         fout.close()
         
@@ -158,7 +165,7 @@ class Storage:
         """Saves the journal of the storage object (not the journal of the 
         journal object)"""
         
-        fout = open(self.ini['SAVE LOCATION'] + "journal_db", "wb")
+        fout = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
         pickle.dump(journal, fout)
         fout.close()
         
@@ -169,3 +176,14 @@ class Storage:
         tmp = self.config_path+'/Resources'
         if not path.exists(path.abspath(tmp)):
             makedirs(tmp)
+            
+    def getWorkingDir(self):
+        frozen = False
+        if getattr(sys, 'frozen', False):
+            frozen = True
+            self.config_path = sys._MEIPASS
+        else:
+            self.config_path = path.dirname(path.abspath('Storage.py'))
+            
+    def getPath(self):
+        return self.config_path
