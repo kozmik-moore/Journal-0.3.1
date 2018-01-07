@@ -318,9 +318,11 @@ class TagsFrame(tk.Frame, TagsManager):
             self.compareActiveStringFirst()
         
     def save(self):
+        """This is annoying behavior and needs fixing"""
         while not self.getActiveStrings():
             self.createAddDialog()
         self.saveTagsToEntry()
+        self.updateGUI(self.entry)
         
     def deleteTag(self, tag):
         self.deactivateTag(tag)

@@ -1,3 +1,4 @@
+
 <Help>
 [Main Window]
 The Main Window is the first window that you see when you start the application for normal use. After writing your thoughts in the text box, you can press the "Save" button in the bottom button cluster or select it from the menubar to add this entry to the journal. If you have not already done so, the application will prompt you to add some tags to attach to your entry. To preempt this, you can either press the "Tags" button to open a dialog to add tags that are already in use in your journal or the "Add" button to add new tags manually. Once you have attached some tags to the entry, you can press the "Tags" button again anytime you want to attach or disattach tags, "Add" to add new tags, or the individual tag button to modify that specific tag manually.
@@ -19,7 +20,7 @@ The "Add Attachments" button, when pressed, allows the addition of, well, attach
 [Date Selection]
 Having acquired some journal entries, you can peruse old entries by selecting them from the drop-down box in the top left corner. The number to the left of the date tells you how many entries are currently accessible in the drop-down box. The "Filter" button will open the Date Filter Window, which lists all of the tags currently in use in the journal. Selecting or deselecting the checkbuttons will determine which entries get filtered, based on their associated tags. At the bottom of the window is a collection of buttons. The radiobuttons allow you to determine the type of filter you want:
 
--"OR" will allow any entry through which has, at least, one of the tags you selected;
+-"OR" will allow through any entry which has, at least, one of the tags you selected;
 
 -"AND" lets through entries that have only the tags you selected, nothing more and nothing less;
 
@@ -28,23 +29,28 @@ Having acquired some journal entries, you can peruse old entries by selecting th
 The "Is Linked" button applies a filter after one of the other selected filters which sorts out the entries by whether they are linked to another entry (i.e. they are part of a thought-tree). The "ALL" button selects all checkbuttons and the "NONE" button deselects all checkbuttons. The "INVERT" button deselects all selected buttons and checks all deselected buttons.
 
 [MenuBar]
-<\Help>
+
+--IN DEVELOPMENT--
+
+<Help>
 
 <About>
-SlateJournal
-Author:				Kozmik Moore
-Website:			https://github.com/kozmik-moore/Journal-0.3.1
+kunnekted-jurnl
+Author:	Kozmik Moore
+Website:	https://github.com/kozmik-moore/Journal-0.3.1
 
 Developed using Anaconda (Python 3.6)
 Licensed under
 Feel free to use and modify this software: all I ask is credit where credit is due!
 
-<\About>
+<About>
 
 <Shortcuts>
+--IN DEVELOPMENT--
+
 Main Window:
 
-	Ctrl-Tab			Switch between field and date bar
+	Ctrl-Tab				Switch between field and date bar
 	Ctrl-N				Save current entry and create new entry
 	Ctrl-L				Save current entry and create linked entry
 	Ctrl-G				Display thought-tree
@@ -52,10 +58,11 @@ Main Window:
 	Ctrl-S				Display attachments
 	Ctrl-Q				Save current entry and close application
 
+
 Graph Window:
 
 	Ctrl-W				Close window
-	Tab					Traverse tree
+	Tab				Traverse tree
 	Enter				Preview selected entry
 
 Preview Window:
@@ -73,28 +80,28 @@ Date Filter Window:
 	Ctrl-P				Select "OR(P)" type filter
 	Ctrl-L				Toggle "Is Linked" filter
 	Ctrl-S				Search tags (Coming Soon!)
-	Tab					Traverse tags checkboxes
+	Tab				Traverse tags checkboxes
 
 Tags Filter Window:
 
 	Ctrl-A				Select all tags (Coming Soon!)
 	Ctrl-D				Deselect all tags (Coming Soon!)
 	Ctrl-I				Invert tag selection (Coming Soon!)
-	Tab					Traverse tags checkboxes
+	Tab				Traverse tags checkboxes
 
-<\Shortcuts>
+<Shortcuts>
 
 <Welcome>
 Welcome!
 
 This is my personal journaling application.
 
-It began as a desire to record my thoughts and experiences and turned into an attempt to record the context under which certain thoughts emerged. Specifically, I hoped to capture not only my thoughts, but the realtionship between thoughts and the overall structure of related thoughts. It is my hope, as this continues to develop, that it will be a tool to see not only the thoughts that I once possessed or currently do, but to see the change in my thoughts over time, to witness to how I change as a thinking person over the course of my life. It is my hope to also add some statistical analysis of my writing as time goes on. That is how I use this application, though: it is not how you must use it.
+It began as a desire to record my thoughts and experiences and turned into an attempt to record the context under which certain thoughts emerged. Specifically, I hoped to capture not only my thoughts, but the realtionship between thoughts and the overall structure of related thoughts. It is my hope, as this continues to develop, that it will be a tool to see not only the thoughts that I once possessed or currently do, but to see the change in my thoughts over time, to witness how I change as a thinking person over the course of my life. It is my hope to also add some statistical analysis of my writing as time goes on. That is how I choose to use this application, though: it is not how you must use it.
 
 If you need any guidance, the "Help" menu has instructions, descriptions, keyboard shortcuts, and contact information for me.
 
 Good writing!
-<\Welcome>
+<Welcome>
 
 <Known Bugs>
-<\Known Bugs>
+<Known Bugs>

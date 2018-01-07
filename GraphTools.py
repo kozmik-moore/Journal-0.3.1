@@ -9,6 +9,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from JObject import *
 import DateTools
+from os.path import join
 
 INF = -1
 NIL = None
@@ -18,7 +19,7 @@ BUTTON_LENGTH = 180
 BUTTON_HEIGHT = 60
        
 class JGraph(tk.Frame):
-    def __init__(self, master, controller, journal, entry, **kw):
+    def __init__(self, master, controller, journal, entry, path, **kw):
         self.master = master
         self.controller = controller
         self.journal=journal
@@ -44,6 +45,7 @@ class JGraph(tk.Frame):
         
         self.graph_dialog = None
         self.preview_dialog = None
+        self.iconpath = join(path, 'Resources\\web.ico')
         
         self.style = ttk.Style()        
         self.style.configure('Current.TButton', width='', background='black', border=10)
@@ -143,6 +145,7 @@ class JGraph(tk.Frame):
         
         self.graph_dialog = tk.Toplevel()
         self.graph_dialog.title('Graph')
+        self.graph_dialog.iconbitmap(self.iconpath)
         self.graph_dialog.grab_set()
         frame = tk.Frame(self.graph_dialog)
         xbar = ttk.Scrollbar(frame, orient='horizontal')
@@ -221,6 +224,7 @@ class JGraph(tk.Frame):
         
         self.preview_dialog = tk.Toplevel(bg='slate gray')
         self.preview_dialog.title('Preview')
+        self.preview_dialog.iconbitmap(self.iconpath)
         self.preview_dialog.grab_set()
         outer_frame = tk.Frame(self.preview_dialog, bg='slate gray')
         body_frame = tk.Frame(outer_frame, bg='slate gray')

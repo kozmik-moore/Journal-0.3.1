@@ -30,4 +30,7 @@ def getDateFileStorageFormat(date):
 
 def createDatetimeObject(string):
     """Takes a string in the format YYYYMMDDHHMMSS and returns a datetime object"""
-    return datetime.strptime(string, '%Y%m%d%H%M%S%f')
+    try:
+        return datetime.strptime(string, '%Y%m%d%H%M%S%f')
+    except ValueError:
+        return False

@@ -1,0 +1,27 @@
+#This is a template for the file that the import function of kunnected-jurnl will
+#accept. Make a copy of the template file and rename the file to something you 
+#consider relevant.
+
+#Enter the date and time as a single string in the format shown below to 
+#the space between the 'Datetime' markers. The body of your thoughts and tags 
+#should be added to their respective sections. 
+
+#Upon import, this file will be added to an attachments folder associated with 
+#the date of the import.
+
+#Datetime format: yyyymmddhhmmss 
+#(If you don't know the hours, minutes, or seconds, just put zero in those places.)
+
+<Datetime>
+
+<Datetime>
+
+<Body>
+
+<Body>
+
+#Tags format: separate each tag with a comma
+
+<Tags>
+
+<Tags>

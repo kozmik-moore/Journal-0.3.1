@@ -12,8 +12,9 @@ from BodyModule import BodyFrame
 from TagsModule import TagsFrame
 from Storage import Storage
 from DateModule import DateFrame
-import DateTools
-import textwrap
+from os.path import join
+#import DateTools
+#import textwrap
 from GraphTools import JGraph
 from AttachmentTools import AttachmentManager
                 
@@ -25,12 +26,23 @@ class Main(tk.Tk):
         self.geometry("%dx%d+0+0" % (w*.95, h*.8))
         self.config(background='slate gray')
 #        self.overrideredirect(1)
-        self.title('Journal')
+        self.title('kunnekted-jurnl')
         self.storage = Storage()
-        self.storage.LoadIniFile()
-        self.storage.openJournalFile()
+        self.app_loc = self.storage.getPath()
+        iconpath = join(self.app_loc, 'Resources\\web.ico')
+        self.iconbitmap(iconpath)
+        messagepath = (join(self.app_loc, 'Resources\\Messages'))
+        messagefile = open(messagepath)
+        self.messages = messagefile.read()
+#        self.storage.LoadIniFile()
+#        self.storage.openJournalFile()
         self.journal = self.storage.getJournal()
+#        self.storage.runBackup()
         self.entry = JEntry()
+        kw = {'journal':self.journal, 'jentry': self.entry, 
+                    'icon': iconpath, 'messages': self.messages,
+                    'app': self.app_loc, 'controller': self, 
+                    'bg': 'slate gray'}
 #        if self.journal.isEmpty():
 #            date = DateTools.getCurrentDate()
 #            body = textwrap.dedent("Welcome!\n\nThis entry is to provide a little guidance if you happen "
@@ -75,7 +87,7 @@ class Main(tk.Tk):
         self.last_backup_var = self.storage.getLastBackupVar()
         
         self.top_frame = tk.Frame(self, bg='slate gray')
-        top_left_frame = tk.Frame(self.top_frame, width=100)
+#        top_left_frame = tk.Frame(self.top_frame, width=100)
         self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, 
                                     self, width=100, bg='slate gray')
         top_right_frame = tk.Frame(self.top_frame, bg='slate gray')
@@ -88,9 +100,9 @@ class Main(tk.Tk):
         self.options_frame = tk.Frame(self.lower_frame, bg='slate gray', 
                                       relief='ridge', border=5)
         self.lower_right = tk.Frame(self.lower_frame, bg='slate gray')
-        self.jgraph = JGraph(self.options_frame, self, self.journal, self.entry, 
-                             bg='slate gray')
-        self.attachmanager = AttachmentManager(self.options_frame, self, self.storage.getPath(), self.journal, 
+        self.jgraph = JGraph(self.options_frame, self, self.journal, 
+                             self.entry, self.app_loc, bg='slate gray')
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.app_loc, self.journal, 
                                                self.entry, bg='slate gray')
 
 #        top_left_frame.grid(row=0, column=1)
@@ -163,19 +175,70 @@ class Main(tk.Tk):
         
         self.protocol("WM_DELETE_WINDOW", self.destroyApp)
         self.bindDateControl()
-        self.storage.runBackup()
+#        self.storage.runBackup()
         self.updateGUI(entry=self.entry)
         
     def createShortcutsWindow(self):
-        None
+        self.createWindow('Shortcuts', self.messages.split('<Shortcuts>')[1], (500, 500))
         
     def createHelpWindow(self):
-        None
+        self.createWindow('Help', self.messages.split('<Help>')[1], (300, 500))
                 
     def createAboutWindow(self):
-        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
-        main = messagebox.Message(title="About", message=message)
-        main.show()
+        self.createWindow('About', self.messages.split('<About>')[1], (200, 300))
+        
+##        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
+##        main = messagebox.Message(title="About", message=text)
+#        main = tk.Toplevel(master=self)
+#        main.title('About')
+#        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
+#        message = tk.Message(main, text=text, bg='slate gray')
+#        message.pack()
+##        main.show()
+#        main.grab_set()
+        
+    def createWindow(self, title, message, dims):
+##        text = message
+##        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
+##        main = messagebox.Message(title="About", message=text)
+#        main = tk.Toplevel(master=self)
+#        main.title(title)
+#        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
+#        main.geometry(str(dims[0])+'x'+str(dims[1]))
+#        ybar = ttk.Scrollbar(main)
+#        canvas = tk.Canvas(main, yscrollcommand = ybar.set, 
+#                           width=dims[1],height=dims[0])
+#        frame = tk.Frame(canvas, bg='slate gray')
+#        ybar.config(command=canvas.yview)
+#        ybar.pack(side='right', fill='y')
+#        message = tk.Message(frame, text=message, bg='slate gray')
+#        canvas.pack(side='left', fill='both', expand=True)
+#        canvas.create_window(0,0,window=frame, anchor='nw')
+#        message.pack()
+##        frame.pack(fill='both', expand=True)
+#        main.update()
+#        canvas.config(scrollregion=canvas.bbox('all'))
+##        main.show()
+#        main.focus_force()
+#        main.grab_set()
+        main = tk.Toplevel()
+        main.title(title)
+        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
+#        main.geometry(str(dims[0])+'x'+str(dims[1]))
+        outerframe = tk.Frame(main, bg='slate gray')
+        frame = tk.Frame(outerframe, bg='slate gray')
+        ybar = ttk.Scrollbar(frame)
+        text=tk.Text(frame, bg='slate gray', yscrollcommand=ybar.set, 
+                     wrap='word', font='TkMenuFont')
+        ybar.config(command=text.yview)
+        text.insert('insert', message)
+        text.config(state='disabled')
+        text.pack(side='left', fill='both', expand=True)
+        ybar.pack(side='left', fill='y', expand=False, anchor='w')
+        frame.pack(side='left', fill='both', expand=True, anchor='e', padx=3)
+        outerframe.pack(expand=True, fill='both')
+        main.focus_force()
+        main.grab_set()
         
     def destroyApp(self):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():

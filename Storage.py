@@ -9,16 +9,20 @@ whether the Journal script is operating in a bundle (e.g. .exe) or freely in a
 Python environment.
 """
 
-from os import path
-from os import makedirs
-from inspect import getsourcefile
+from os.path import exists
+from os.path import abspath
+from os.path import dirname
+from os.path import join
+from os import mkdir
+from os import listdir
+from shutil import move
 import pickle
 from tkinter import BooleanVar
 from tkinter import IntVar
 from tkinter import StringVar
 import DateTools
-from tkinter import filedialog as filedialog
-from JObject import JObject
+from tkinter.filedialog import askdirectory
+import JObject
 import sys
 
 class Storage:
@@ -34,6 +38,11 @@ class Storage:
         self.last_backup = StringVar(master=self.master, name='Last Backup', value=self.ini['LAST BACKUP'])
         
         self.createResourceFolder()
+        self.createImportsDir()
+        self.LoadIniFile()
+        self.openJournalFile()
+#        self.checkImports()
+        self.runBackup()
          
     def LoadIniFile(self):
         try:
@@ -57,7 +66,7 @@ class Storage:
             self.journal = pickle.load(fin)
         except FileNotFoundError:
             fin = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
-            self.journal = JObject()
+            self.journal = JObject.JObject()
         fin.close()
         
     def changeSaveDirectory(self):
@@ -69,7 +78,7 @@ class Storage:
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Save Location'
-        location = filedialog.askdirectory(**self.dir_opt)
+        location = askdirectory(**self.dir_opt)
         if location != '':
             self.ini['SAVE LOCATION'] = location + "/"
         
@@ -82,11 +91,11 @@ class Storage:
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Backup Folder'
-        location = filedialog.askdirectory(**self.backup_opt)
+        location = askdirectory(**self.backup_opt)
         if location != '':
             self.ini['BACKUP LOCATION'] = location + "/Backup/"
-            if not path.exists(self.ini['BACKUP LOCATION']):
-                makedirs(self.ini['BACKUP LOCATION'])
+            if not exists(self.ini['BACKUP LOCATION']):
+                mkdir(self.ini['BACKUP LOCATION'])
             
     def changeBackupSchedule(self):
         self.ini['BACKUP INTERVAL'] = self.backup_interval.get()            
@@ -163,7 +172,7 @@ class Storage:
         
     def saveJournal(self, journal):
         """Saves the journal of the storage object (not the journal of the 
-        journal object)"""
+        journal object) [Is this the same journal?]"""
         
         fout = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
         pickle.dump(journal, fout)
@@ -174,8 +183,13 @@ class Storage:
         
     def createResourceFolder(self):
         tmp = self.config_path+'/Resources'
-        if not path.exists(path.abspath(tmp)):
-            makedirs(tmp)
+        if not exists(abspath(tmp)):
+            mkdir(tmp)
+            
+    def createImportsDir(self):
+        tmp = join(self.config_path, 'Imports\\')
+        if not exists(abspath(tmp)):
+            mkdir(tmp)
             
     def getWorkingDir(self):
         frozen = False
@@ -183,7 +197,47 @@ class Storage:
             frozen = True
             self.config_path = sys._MEIPASS
         else:
-            self.config_path = path.dirname(path.abspath('Storage.py'))
+            self.config_path = dirname(abspath('Storage.py'))
             
     def getPath(self):
         return self.config_path
+    
+    def importEntry(self, jeif_path):
+        if exists(jeif_path):
+            att_path = None
+            fin = open(jeif_path)
+            contents = fin.read()
+            fin.close()
+            date = contents.split('<Datetime>')[1]
+            date = DateTools.createDatetimeObject(date.strip())
+            body = contents.split('<Body>')[1]
+            if not body:
+                body = '(Body section of import file was empty.)'
+            if not date:
+                date = DateTools.getCurrentDate()
+                body = 'This entry was created by an import file with ' +\
+                             'no associated date. The import file can be ' +\
+                             'viewed in the attachments folder associated ' +\
+                             'with this entry.\n\n' + body
+            att_path = join(self.config_path, 'Attachments\\' + 
+                            DateTools.getDateFileStorageFormat(date))
+            mkdir(att_path)
+            move(jeif_path, att_path)
+            tags = contents.split('<Tags>')[1]
+            tags = tags.strip()
+            tags = tags.strip(',')
+            tags = tags.split(',')
+            for i in range(0, len(tags)):
+                tags[i] = tags[i].strip()
+            if not tags:
+                tags = ['Untagged']
+            entry = JObject.JEntry(date, body, tags)
+            self.journal.add(entry)
+            
+    def checkImports(self):
+        path = join(self.config_path, 'Imports\\')
+        check = listdir(path)
+        if check:
+            for file in check:
+                if file.endswith('.jeif'):
+                    self.importEntry(abspath(join(path,file)))

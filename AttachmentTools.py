@@ -8,6 +8,7 @@ Created on Fri Apr 14 13:22:32 2017
 import DateTools as DT
 from os.path import abspath
 from os.path import exists
+from os.path import join
 from os import listdir
 from os import rename
 from os import mkdir
@@ -35,7 +36,8 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = None
         self.delete_icon = None
         
-        self.parentpath = path + '\\Attachments\\'        
+        self.iconpath = join(path, 'Resources\\Trash_Can-512.png')
+        self.parentpath = join(path, 'Attachments\\')        
         try:
             mkdir(self.parentpath)
         except FileExistsError:
@@ -202,9 +204,9 @@ class AttachmentManager(tk.Frame):
         w = self.DELETE.winfo_width()
         h = self.DELETE.winfo_height()
         if not self.delete_icon:
-            iconpath = self.parentpath.rsplit('\\Attachments',1)[0] + \
-            '\\Resources\\Trash_Can-512.png'
-            self.delete_icon = PI.open(iconpath)
+#            iconpath = self.parentpath.rsplit('\\Attachments',1)[0] + \
+#            '\\Resources\\Trash_Can-512.png'
+            self.delete_icon = PI.open(self.iconpath)
             self.delete_icon.thumbnail((h-2,h-2))
             self.delete_icon = ImageTk.PhotoImage(self.delete_icon)
         self.DELETE.config(command=self.refreshDialog, text='', 
@@ -294,15 +296,15 @@ class AttachmentManager(tk.Frame):
         dest = self.parentpath + DT.getDateFileStorageFormat(date)
 #        tmp = False
         old = self.entry.getAttachments()
-        new = listdir(src)
 #        if not old:
-        if exists(src) and new:
+        if exists(src):
 #            tmp = True
-#            new = listdir(src)
-            for item in new:
-                if item not in old:
-                    self.entry.addAttachment(item)
-            rename(src, dest)
+            new = listdir(src)
+            if new:
+                for item in new:
+                    if item not in old:
+                        self.entry.addAttachment(item)
+                rename(src, dest)
 #        self.delete()
 #        src = self.currentpath
 #        if new and tmp:
