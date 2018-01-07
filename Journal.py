@@ -177,6 +177,12 @@ class Main(tk.Tk):
         self.bindDateControl()
 #        self.storage.runBackup()
         self.updateGUI(entry=self.entry)
+        if self.storage.getFirstTimeVar().get():
+            self.createWelcomeWindow()
+            self.storage.changeFirstTimeFlag()
+            
+    def createWelcomeWindow(self):
+        self.createWindow('Welcome!', self.messages.split('<Welcome>')[1], (500, 500))
         
     def createShortcutsWindow(self):
         self.createWindow('Shortcuts', self.messages.split('<Shortcuts>')[1], (500, 500))

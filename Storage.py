@@ -30,18 +30,26 @@ class Storage:
 #        self.config_path = path.abspath(getsourcefile(lambda:0)).strip('Storage.py')
         self.config_path = ''
         self.getWorkingDir()
-        self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 'LAST BACKUP': None, 'BACKUP INTERVAL': 168, 'AUTOSAVE': False}
+        self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 
+                    'LAST BACKUP': None, 'BACKUP INTERVAL': 168, 
+                    'AUTOSAVE': False, 'FIRST TIME': True}
         self.journal = None
         self.master = master
-        self.auto_save = BooleanVar(master=self.master, name='Autosave', value=self.ini['AUTOSAVE'])
-        self.backup_interval = IntVar(master=self.master, name='Backup Interval', value=self.ini['BACKUP INTERVAL'])
-        self.last_backup = StringVar(master=self.master, name='Last Backup', value=self.ini['LAST BACKUP'])
+        self.auto_save = BooleanVar(master=self.master, name='Autosave', 
+                                    value=self.ini['AUTOSAVE'])
+        self.backup_interval = IntVar(master=self.master, 
+                                      name='Backup Interval', 
+                                      value=self.ini['BACKUP INTERVAL'])
+        self.last_backup = StringVar(master=self.master, name='Last Backup', 
+                                     value=self.ini['LAST BACKUP'])
+        self.first_time = BooleanVar(self.master, name='First Time Use Flag', 
+                                     value=self.ini['FIRST TIME'])
         
         self.createResourceFolder()
         self.createImportsDir()
         self.LoadIniFile()
         self.openJournalFile()
-#        self.checkImports()
+        self.checkImports()
         self.runBackup()
          
     def LoadIniFile(self):
@@ -59,6 +67,11 @@ class Storage:
             self.last_backup.set('Never')
         else:
             self.last_backup.set(DateTools.getDateGUIFormat(self.ini['LAST BACKUP']))
+        try:
+            self.first_time.set(self.ini['FIRST TIME'])
+        except KeyError:
+            self.ini['FIRST TIME'] = True
+            self.first_time.set(True)
         
     def openJournalFile(self):
         try:
@@ -107,6 +120,10 @@ class Storage:
             self.auto_save.set(True)
         self.ini['AUTOSAVE'] = self.auto_save.get()
         
+    def changeFirstTimeFlag(self):
+        self.first_time.set(False)
+        self.ini['FIRST TIME'] = False
+        
 #    def checkBackup(self):
 #        today = DateTools.getCurrentDate()
 #        if self.ini['LAST BACKUP']:
@@ -144,6 +161,9 @@ class Storage:
         
     def getLastBackupVar(self):
         return self.last_backup
+    
+    def getFirstTimeVar(self):
+        return self.first_time
         
     def getJournal(self):
         return self.journal.__deepcopy__()
@@ -187,7 +207,7 @@ class Storage:
             mkdir(tmp)
             
     def createImportsDir(self):
-        tmp = join(self.config_path, 'Imports\\')
+        tmp = join(self.config_path, 'Imports')
         if not exists(abspath(tmp)):
             mkdir(tmp)
             
@@ -210,25 +230,27 @@ class Storage:
             fin.close()
             date = contents.split('<Datetime>')[1]
             date = DateTools.createDatetimeObject(date.strip())
-            body = contents.split('<Body>')[1]
+            body = contents.split('<Body>')[1].strip()
             if not body:
-                body = '(Body section of import file was empty.)'
+                body = '--Body section of import file was empty--'
             if not date:
                 date = DateTools.getCurrentDate()
-                body = 'This entry was created by an import file with ' +\
+                body = '--This entry was created by an import file with ' +\
                              'no associated date. The import file can be ' +\
                              'viewed in the attachments folder associated ' +\
-                             'with this entry.\n\n' + body
+                             'with this entry--\n\n' + body
             att_path = join(self.config_path, 'Attachments\\' + 
                             DateTools.getDateFileStorageFormat(date))
             mkdir(att_path)
             move(jeif_path, att_path)
-            tags = contents.split('<Tags>')[1]
-            tags = tags.strip()
+            tags = contents.split('<Tags>')[1].strip()
             tags = tags.strip(',')
             tags = tags.split(',')
-            for i in range(0, len(tags)):
-                tags[i] = tags[i].strip()
+            tmp = tags.copy()
+            for i in range(0, len(tmp)):
+                if tmp[i]:
+                    tags.append(tmp[i].strip())
+                tags.pop(0)
             if not tags:
                 tags = ['Untagged']
             entry = JObject.JEntry(date, body, tags)
