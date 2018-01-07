@@ -32,6 +32,10 @@ The "Is Linked" button applies a filter after one of the other selected filters 
 
 --IN DEVELOPMENT--
 
+[Special]
+
+There is an import function that can be used to add individual entries made from another computer. Simply edit the 'Template.jief' file found in the Resources folder using a text editor (there are instructions in the file) and add the file to the 'Imports' directory found in the main directory; this should be done prior to starting the application. Starting the application will automagically add the new entry to your database.
+
 <Help>
 
 <About>

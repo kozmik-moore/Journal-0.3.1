@@ -13,8 +13,8 @@ class JEntry:
             self.tags = []
         else:
             self.tags = tags
-        if not tags:
-            self.tags = []
+#        if not tags:
+#            self.tags = []
         self.parent = parent  #datetime object
         self.child = []
         self.attachments = []
