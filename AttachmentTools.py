@@ -79,23 +79,34 @@ class AttachmentManager(tk.Frame):
                 self.currentpath = self.temppath
                 mkdir(self.currentpath)
             elif attachments and not filepath:
-                message = ''
-                if len(attachments) > 1:
-                    message = 'The directory for this journal entry could ' +\
-                    'not be located. The following attachments are missing: '
-                    message += attachments[0] + '. Do you want to restore them?'
-                    for item in range(1, len(attachments)):
-                        message += ', ' + attachments[item]
-                else:
-                    message = 'The directory for this journal entry could ' +\
-                    'not be located. The following attachment is missing: '
-                    message += attachments[0] + '. Do you want to restore it?'
+                message = 'The directory for this journal entry could not be ' +\
+                'located. Do you want the application to create a new ' +\
+                'directory with a list of the missing files?'
+#                if len(attachments) > 1:
+#                    message = 'The directory for this journal entry could ' +\
+#                    'not be located. The following attachments are missing: '
+#                    message += attachments[0] + '. Do you want to restore them?'
+#                    for item in range(1, len(attachments)):
+#                        message += ', ' + attachments[item]
+#                else:
+#                    message = 'The directory for this journal entry could ' +\
+#                    'not be located. The following attachment is missing: '
+#                    message += attachments[0] + '. Do you want to restore it?'
                 choice = messagebox.askyesno(title='Missing Directory', 
                                              message=message)
                 if choice:
                     self.currentpath = path
                     mkdir(self.currentpath)
-                    self.askForAttachment()
+#                    self.askForAttachment()
+                    path = join(self.currentpath, 'Missing Files.txt')
+                    file = open(path, 'w+')
+                    for item in attachments:
+                        file.write(item + '\n\n')
+                    file.close()
+#                    message = 'The list of missing files can be found at:\n\n' +\
+#                    self.currentpath
+#                    messagebox.showinfo()
+                    Popen(r'explorer /select, ' + '""' + path + '""')
                 else:
                     for item in attachments:
                         self.entry.deleteAttachment(item)
@@ -122,6 +133,11 @@ class AttachmentManager(tk.Frame):
             if filepath not in self.all_attachments:
                 self.all_attachments.append(filepath)
             copy(filepath, self.currentpath)
+#        folder = listdir(self.currentpath)
+#        entry = self.entry.getAttachments()
+#        for file in folder:
+#            if file not in entry:
+#                self.entry.addAttachment(file)
         self.DISPLAY.config(state=tk.NORMAL)
         
     def askForAttachment(self):
@@ -305,6 +321,11 @@ class AttachmentManager(tk.Frame):
                     if item not in old:
                         self.entry.addAttachment(item)
                 rename(src, dest)
+        else:
+            folder = listdir(dest)
+            for file in folder:
+                if file not in old:
+                    self.entry.addAttachment(file)
 #        self.delete()
 #        src = self.currentpath
 #        if new and tmp:
