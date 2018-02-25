@@ -14,6 +14,7 @@ from os.path import abspath
 from os.path import dirname
 from os.path import join
 from os import mkdir
+from os import remove
 from os import listdir
 from shutil import move
 import pickle
@@ -259,20 +260,24 @@ class Storage:
                              'with this entry--\n\n' + body
             att_path = join(self.config_path, 'Attachments\\' + 
                             DateTools.getDateFileStorageFormat(date))
-            mkdir(att_path)
-            move(jeif_path, att_path)
-            tags = contents.split('<Tags>')[1].strip()
-            tags = tags.strip(',')
-            tags = tags.split(',')
-            tmp = tags.copy()
-            for i in range(0, len(tmp)):
-                if tmp[i]:
-                    tags.append(tmp[i].strip())
-                tags.pop(0)
-            if not tags:
-                tags = ['Untagged']
-            entry = JObject.JEntry(date, body, tags)
-            self.journal.add(entry)
+            if not exists(att_path):
+                mkdir(att_path)
+                move(jeif_path, att_path)
+                tags = contents.split('<Tags>')[1].strip()
+                tags = tags.strip(',')
+                tags = tags.split(',')
+                tmp = tags.copy()
+                for i in range(0, len(tmp)):
+                    if tmp[i]:
+                        tags.append(tmp[i].strip())
+                    tags.pop(0)
+                if not tags:
+                    tags = ['Untagged']
+                entry = JObject.JEntry(date, body, tags)
+                self.journal.add(entry)
+            else:
+                remove(jeif_path)
+                
             
     def checkImports(self):
         path = self.ini['IMPORTS LOCATION']
