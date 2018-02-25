@@ -31,8 +31,9 @@ class Storage:
         self.config_path = ''
         self.getWorkingDir()
         self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 
-                    'LAST BACKUP': None, 'BACKUP INTERVAL': 168, 
-                    'AUTOSAVE': False, 'FIRST TIME': True}
+                    'IMPORTS LOCATION': None, 'LAST BACKUP': None, 
+                    'BACKUP INTERVAL': 168, 'AUTOSAVE': False, 
+                    'FIRST TIME': True}
         self.journal = None
         self.master = master
         self.auto_save = BooleanVar(master=self.master, name='Autosave', 
@@ -46,7 +47,7 @@ class Storage:
                                      value=self.ini['FIRST TIME'])
         
         self.createResourceFolder()
-        self.createImportsDir()
+#        self.createImportsDirectory()
         self.LoadIniFile()
         self.openJournalFile()
         self.checkImports()
@@ -109,6 +110,22 @@ class Storage:
             self.ini['BACKUP LOCATION'] = location + "/Backup/"
             if not exists(self.ini['BACKUP LOCATION']):
                 mkdir(self.ini['BACKUP LOCATION'])
+                
+    def changeImportsDirectory(self):
+        self.backup_opt = options = {}
+        location = self.ini['IMPORTS LOCATION']
+        if not location:
+            options['initialdir'] = self.config_path
+        else:
+            options['initialdir'] = location
+        options['mustexist'] = False
+        options['parent'] = self.master
+        options['title'] = 'Choose a Location for the Imports Folder'
+        location = askdirectory(**self.backup_opt)
+        if location != '':
+            self.ini['IMPORTS LOCATION'] = join(location, 'Journal Imports')
+            if not exists(self.ini['IMPORTS LOCATION']):
+                mkdir(self.ini['IMPORTS LOCATION'])
             
     def changeBackupSchedule(self):
         self.ini['BACKUP INTERVAL'] = self.backup_interval.get()            
@@ -206,10 +223,11 @@ class Storage:
         if not exists(abspath(tmp)):
             mkdir(tmp)
             
-    def createImportsDir(self):
-        tmp = join(self.config_path, 'Imports')
-        if not exists(abspath(tmp)):
-            mkdir(tmp)
+#    def createImportsDirectory(self):
+##        tmp = join(self.config_path, 'Imports')
+##        if not exists(abspath(tmp)):
+##            mkdir(tmp)
+#        None
             
     def getWorkingDir(self):
         frozen = False
@@ -257,7 +275,9 @@ class Storage:
             self.journal.add(entry)
             
     def checkImports(self):
-        path = join(self.config_path, 'Imports\\')
+        path = self.ini['IMPORTS LOCATION']
+        if not path:
+            self.changeImportsDirectory()
         check = listdir(path)
         if check:
             for file in check:

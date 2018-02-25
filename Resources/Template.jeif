@@ -9,7 +9,7 @@
 #Upon import, this file will be added to an attachments folder associated with 
 #the date of the import.
 
-#Datetime format: yyyymmddhhmmss 
+#Datetime format: yyyymmddhhmmss (Year, Month, Day, Hours, Minutes, Seconds; zeroes are important)
 #(If you don't know the hours, minutes, or seconds, just put zero in those places.)
 
 <Datetime>
