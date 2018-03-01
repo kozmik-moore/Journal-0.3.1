@@ -23,6 +23,7 @@ from tkinter import IntVar
 from tkinter import StringVar
 import DateTools
 from tkinter.filedialog import askdirectory
+from tkinter.messagebox import askyesno
 import JObject
 import sys
 
@@ -283,7 +284,17 @@ class Storage:
         path = self.ini['IMPORTS LOCATION']
         if not path:
             self.changeImportsDirectory()
-        check = listdir(path)
+        check = None
+        try:
+            check = listdir(path)
+        except FileNotFoundError:
+            message = 'The imports folder could not be located at ' + path +\
+            '.\n\n Would you like to reassign the directory?'
+            new = askyesno('Directory Not Found!', message)
+            if new:
+                self.changeImportsDirectory()
+                path = self.ini['IMPORTS LOCATION']
+                check = listdir(path)
         if check:
             for file in check:
                 if file.endswith('.jeif'):
