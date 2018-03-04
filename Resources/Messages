@@ -1,7 +1,7 @@
 
 <Help>
 [Main Window]
-The Main Window is the first window that you see when you start the application for normal use. After writing your thoughts in the text box, you can press the "Save" button in the bottom button cluster or select it from the menubar to add this entry to the journal. If you have not already done so, the application will prompt you to add some tags to attach to your entry. To preempt this, you can either press the "Tags" button to open a dialog to add tags that are already in use in your journal or the "Add" button to add new tags manually. Once you have attached some tags to the entry, you can press the "Tags" button again anytime you want to attach or disattach tags, "Add" to add new tags, or the individual tag button to modify that specific tag manually.
+The Main Window is the first window that you see when you start the application for normal use. After writing your thoughts in the text box, you can press the "Save" button in the bottom button cluster or select it from the menubar to add this entry to the journal. If you have not already done so, the application will prompt you to add some tags to attach to your entry. To preempt this, you can either press the "Tags" button to open a dialog to add your preexisting tags or the "Add" button to add new tags manually. Once you have attached some tags to the entry, you can press the "Tags" button again anytime you want to attach or detach tags, "Add" to add new tags, or the individual tag button to modify that specific tag manually.
 
 The "Delete" button allows you to remove entries from the journal, if the entry has a date, or clear the Main Window of text and tags, if it doesn't.
 
@@ -30,11 +30,11 @@ The "Is Linked" button applies a filter after one of the other selected filters 
 
 [MenuBar]
 
---IN DEVELOPMENT--
+--UNDER DEVELOPMENT--
 
 [Special]
 
-There is an import function that can be used to add individual entries made from another computer. Simply edit the 'Template.jief' file found in the Resources folder using a text editor (there are instructions in the file) and add the file to the 'Imports' directory found in the main directory; this should be done prior to starting the application. Starting the application will automagically add the new entry to your database.
+There is an import function that can be used to add individual entries made on another device. Simply edit the 'Template.jeif' file found in the Resources folder using a text editor (there are instructions in the file) and add the file to your 'Journal Imports' directory; this should be done prior to starting the application. Starting the application will automagically add the new entry to your database.
 
 <Help>
 
@@ -50,7 +50,7 @@ Feel free to use and modify this software: all I ask is credit where credit is d
 <About>
 
 <Shortcuts>
---IN DEVELOPMENT--
+--UNDER DEVELOPMENT--
 
 Main Window:
 

@@ -102,7 +102,8 @@ class Main(tk.Tk):
         self.lower_right = tk.Frame(self.lower_frame, bg='slate gray')
         self.jgraph = JGraph(self.options_frame, self, self.journal, 
                              self.entry, self.app_loc, bg='slate gray')
-        self.attachmanager = AttachmentManager(self.options_frame, self, self.app_loc, self.journal, 
+        self.attachmanager = AttachmentManager(self.options_frame, self, 
+                                               self.app_loc, self.journal, 
                                                self.entry, bg='slate gray')
 
 #        top_left_frame.grid(row=0, column=1)
@@ -116,7 +117,8 @@ class Main(tk.Tk):
         self.tags_frame.pack(side='top', expand=True, fill='x', padx=5)
         
         self.LAST_BACKUP_LABEL = ttk.Label(top_right_frame, text='Last Backup: ')
-        self.LAST_BACKUP = ttk.Label(top_right_frame, textvariable=self.last_backup_var)
+        self.LAST_BACKUP = ttk.Label(top_right_frame, 
+                                     textvariable=self.last_backup_var)
         self.LAST_BACKUP.pack(side='right', padx=3)
         self.LAST_BACKUP_LABEL.pack(side='right')
         
@@ -125,13 +127,17 @@ class Main(tk.Tk):
         self.lower_right.pack(side='left', expand=True, fill='x')
         self.lower_frame.pack(side='top', expand=True, fill='x', padx=5)
         
-        self.SAVE = ttk.Button(self.options_frame, takefocus=0, text="Save", command=self.save)
+        self.SAVE = ttk.Button(self.options_frame, takefocus=0, text="Save", 
+                               command=self.save)
         self.SAVE.grid(row=0, column=0)
-        self.NEW = ttk.Button(self.options_frame, takefocus=0, text="New Entry", command=self.newEntry)
+        self.NEW = ttk.Button(self.options_frame, takefocus=0, text="New Entry", 
+                              command=self.newEntry)
         self.NEW.grid(row=0, column=6)
-        self.QUIT = ttk.Button(self.options_frame, takefocus=0, text="Quit", command=self.destroyApp)
+        self.QUIT = ttk.Button(self.options_frame, takefocus=0, text="Quit", 
+                               command=self.destroyApp)
         self.QUIT.grid(row=1, column=0)
-        self.DELETE = ttk.Button(self.options_frame, takefocus=0, text="Delete", command=self.delete)
+        self.DELETE = ttk.Button(self.options_frame, takefocus=0, text="Delete", 
+                                 command=self.delete)
         self.DELETE.grid(row=1, column=6)
         self.jgraph.grid(row=0, column=2, rowspan=2)
         self.attachmanager.grid(row=0, column=4, rowspan=2)
@@ -139,7 +145,8 @@ class Main(tk.Tk):
         menubar = tk.Menu(self, bg='slate gray')
         
         journal_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
-        journal_menu.add_command(label='Save All Changes', command=self.writeToDatabase)
+        journal_menu.add_command(label='Save All Changes', 
+                                 command=self.writeToDatabase)
         pref_menu = tk.Menu(journal_menu, bg='slate gray', tearoff=0)
         journal_menu.add_cascade(label='Database Preferences', menu=pref_menu)
         journal_menu.add_command(label='Quit', command=self.destroyApp)
@@ -148,23 +155,42 @@ class Main(tk.Tk):
         entry_menu.add_command(label='Save', command=self.save)
         entry_menu.add_command(label='Delete', command=self.delete)
 #        pref_menu.add_command(label='Autosave changes on exit', command=self.changeAutoSavePref)
-        pref_menu.add_command(label="Select Save Directory", command=self.storage.changeSaveDirectory)
+        pref_menu.add_command(label="Change Save Directory", 
+                              command=self.storage.changeSaveDirectory)
         backup_menu = tk.Menu(pref_menu, bg='slate gray', tearoff=0)
-        backup_menu.add_command(label='Select Backup Directory', command=self.storage.changeBackupDirectory)
+        backup_menu.add_command(label='Change Backup Directory', 
+                                command=self.storage.changeBackupDirectory)
         self.interval_menu = tk.Menu(backup_menu, bg='slate gray', tearoff=0)
-        self.interval_menu.add_command(label='Immediately', command=self.storage.backupDatabase)
-        self.interval_menu.add_radiobutton(label='Day', var=self.backup_interval_var, value=24, command=self.storage.changeBackupSchedule)
-        self.interval_menu.add_radiobutton(label='3 Days', var=self.backup_interval_var, value=72, command=self.storage.changeBackupSchedule)
-        self.interval_menu.add_radiobutton(label='Week', var=self.backup_interval_var, value=168, command=self.storage.changeBackupSchedule)
-        self.interval_menu.add_radiobutton(label='Never', var=self.backup_interval_var, value=-1, command=self.storage.changeBackupSchedule)
+        self.interval_menu.add_command(label='Immediately', 
+                                       command=self.storage.backupDatabase)
+        self.interval_menu.add_radiobutton(label='Day', 
+                                           var=self.backup_interval_var, 
+                                           value=24, 
+                                           command=self.storage.changeBackupSchedule)
+        self.interval_menu.add_radiobutton(label='3 Days', 
+                                           var=self.backup_interval_var, 
+                                           value=72, 
+                                           command=self.storage.changeBackupSchedule)
+        self.interval_menu.add_radiobutton(label='Week', 
+                                           var=self.backup_interval_var, 
+                                           value=168, 
+                                           command=self.storage.changeBackupSchedule)
+        self.interval_menu.add_radiobutton(label='Never', 
+                                           var=self.backup_interval_var, 
+                                           value=-1, 
+                                           command=self.storage.changeBackupSchedule)
 
-        backup_menu.add_cascade(label='Backup Database Every...', menu=self.interval_menu)
+        backup_menu.add_cascade(label='Backup Database Every...', 
+                                menu=self.interval_menu)
         pref_menu.add_cascade(label='Backup Options', menu=backup_menu)
+        pref_menu.add_command(label="Change Imports Directory", 
+                              command=self.storage.changeImportsDirectory)
         
 
         help_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
         help_menu.add_command(label='Help', command=self.createHelpWindow)
-        help_menu.add_command(label='Keyboard Shortcuts', command=self.createShortcutsWindow)
+        help_menu.add_command(label='Keyboard Shortcuts', 
+                              command=self.createShortcutsWindow)
         help_menu.add_command(label="About", command=self.createAboutWindow)
         
         menubar.add_cascade(label='Journal', menu=journal_menu)
@@ -182,16 +208,19 @@ class Main(tk.Tk):
             self.storage.changeFirstTimeFlag()
             
     def createWelcomeWindow(self):
-        self.createWindow('Welcome!', self.messages.split('<Welcome>')[1], (500, 500))
+        self.createWindow('Welcome!', self.messages.split('<Welcome>')[1], 
+                          (500, 500))
         
     def createShortcutsWindow(self):
-        self.createWindow('Shortcuts', self.messages.split('<Shortcuts>')[1], (500, 500))
+        self.createWindow('Shortcuts', self.messages.split('<Shortcuts>')[1], 
+                          (500, 500))
         
     def createHelpWindow(self):
         self.createWindow('Help', self.messages.split('<Help>')[1], (300, 500))
                 
     def createAboutWindow(self):
-        self.createWindow('About', self.messages.split('<About>')[1], (200, 300))
+        self.createWindow('About', self.messages.split('<About>')[1], 
+                          (200, 300))
         
 ##        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
 ##        main = messagebox.Message(title="About", message=text)
@@ -329,7 +358,8 @@ class Main(tk.Tk):
     def newLink(self):
         if self.entry.getDate() or not self.body_frame.bodyFieldIsEmpty():
             self.save()
-            self.updateGUI(entry=JEntry(parent=self.entry.getDate(), tags=self.entry.getTags()))
+            self.updateGUI(entry=JEntry(parent=self.entry.getDate(), 
+                                        tags=self.entry.getTags()))
                 
 class JournalStyle(ttk.Style):
     def __init__(self):
