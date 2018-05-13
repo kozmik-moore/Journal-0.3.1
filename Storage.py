@@ -92,26 +92,21 @@ class Storage:
         self.dir_opt = options = {}
         if not self.ini['SAVE LOCATION']:
             options['initialdir'] = self.config_path
-            old = options['initialdir']
         else:
             options['initialdir'] = self.ini['SAVE LOCATION']
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Save Location'
         location = askdirectory(**self.dir_opt)
         if location != '':
             self.ini['SAVE LOCATION'] = location + "/"
-#            move(old, location)
         
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
         if not self.ini['BACKUP LOCATION']:
             options['initialdir'] = self.config_path
-            old = options['initialdir']
         else:
             options['initialdir'] = self.ini['BACKUP LOCATION']
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Backup Folder'
@@ -120,31 +115,20 @@ class Storage:
             self.ini['BACKUP LOCATION'] = location + "/Backup/"
             if not exists(self.ini['BACKUP LOCATION']):
                 mkdir(self.ini['BACKUP LOCATION'])
-            if old:
-#                move(join(old, 'journal_db'), self.ini['BACKUP LOCATION'])
-                message = 'Do you want to delete the backup directory at ' +\
-                old + '?'
-                delete = askyesno('Delete old directory?', message)
-                if delete:
-                    rmdir(old)
                                 
     def changeImportsDirectory(self):
         self.backup_opt = options = {}
         location = self.ini['IMPORTS LOCATION']
         if not location:
             options['initialdir'] = self.config_path
-            old = options['initialdir']
         else:
             options['initialdir'] = location
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Imports Folder'
         location = askdirectory(**self.backup_opt)
         if location != '':
             self.ini['IMPORTS LOCATION'] = join(location, 'Journal Imports')
-#            if old:
-#                move(old, location)
             if not exists(self.ini['IMPORTS LOCATION']):
                 mkdir(self.ini['IMPORTS LOCATION'])
             
@@ -177,6 +161,7 @@ class Storage:
         backup_loc = self.ini['BACKUP LOCATION']
         backup_db = None
         fout = None
+        check = None
         if backup_loc:
             backup_db = join(backup_loc, 'journal_db')
             makedirs(backup_loc, exist_ok=True)
@@ -187,7 +172,10 @@ class Storage:
         pickle.dump(self.journal, fout)
         fout.close()
         att_loc = join(self.config_path, 'Attachments\\')
-        check = listdir(att_loc)
+        try:
+            check = listdir(att_loc)
+        except FileNotFoundError:
+            None
         if check:
             try:
                 remove(join(backup_loc, 'Attachments.zip'))
@@ -325,7 +313,10 @@ class Storage:
                                    attachments=attachments)
             self.journal.add(entry)
             for item in attachments:
-                move(abspath(join(path, item)), att_path)              
+                try:
+                    move(abspath(join(path, item)), att_path)
+                except FileNotFoundError:
+                    None
             
     def checkImports(self):
         path = self.ini['IMPORTS LOCATION']
