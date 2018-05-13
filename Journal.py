@@ -43,42 +43,7 @@ class Main(tk.Tk):
                     'icon': iconpath, 'messages': self.messages,
                     'app': self.app_loc, 'controller': self, 
                     'bg': 'slate gray'}
-#        if self.journal.isEmpty():
-#            date = DateTools.getCurrentDate()
-#            body = textwrap.dedent("Welcome!\n\nThis entry is to provide a little guidance if you happen "
-#            "to have any questions. Keep in mind that this is a work in progress, so...bugs ahead! "
-#            "That being said, onto the tutorial."
-#            "\n\nThis panel you are reading from is where you write entries. If you want to make a new entry, "
-#            "click the button marked \"New Entry\"."
-#            "\n\nClicking the button marked \"Linked Entry\" from an entry that is already saved "
-#            "will make a new entry that is \"connected\" to the previous one. The \"Tags\" button "
-#            "allows you to select and deselect tags to add to your entry and the \"Filter\" button "
-#            "lets you filter dates from the datebar by their associated tags."
-#            "\n\nWhen you open the Filter dialog, there will be three radiobutton marked \"OR\", "
-#            "\"AND\", and \"OR(P)\". Selecting tags while the \"OR\" button is selected "
-#            "narrows dates to any containing at least those tags. \"AND\" returns dates that "
-#            "have those tags and only those tags. \"OR(P)\" gives those dates that have at "
-#            "least one of those tags and not any dates that have tags which are not selected. "
-#            "(For those of you who know, think \"power sets\".)"
-#            "\n\n\"Save\" saves your entries and \"Delete\" deletes them from the database. "
-#            "\"Quit\" exits the application, saving all changes on the way out. Closing the "
-#            "window with the \"X\" in the corner will accomplish the same thing."
-#            "\nThe \"Display Linked Entries\" button is for a future implementation where you "
-#            "will have a visual representation of your interconnected thoughts. This is the "
-#            "primary reason I developed this, so that you could see how your thoughts are "
-#            "networked together as they develop over time."
-#            "\n\nThe \"Preferences\" menu allows you to change your database location, "
-#            "backup location, how often the app will backup the database, and contains an "
-#            "option to backup immediately."
-#            "\n\nThe \"Help\" menu has details of where I can be contacted, if further "
-#            "questions arise or you want to look at the code."
-#            "\n\nGood writing!")
-#            tags = ['Welcome']
-#            self.entry = JEntry(date, body, tags)
-#            self.journal.add(self.entry)
-#        else:
-#            self.entry = JEntry()
-            
+   
         style = JournalStyle()
         style.setNightStyle()
         

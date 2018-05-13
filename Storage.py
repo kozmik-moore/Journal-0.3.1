@@ -19,6 +19,7 @@ from os import rmdir
 from os import listdir
 from os import makedirs
 from shutil import move
+from shutil import make_archive
 import pickle
 from tkinter import BooleanVar
 from tkinter import IntVar
@@ -94,14 +95,12 @@ class Storage:
             old = options['initialdir']
         else:
             options['initialdir'] = self.ini['SAVE LOCATION']
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Save Location'
         location = askdirectory(**self.dir_opt)
         if location != '':
             self.ini['SAVE LOCATION'] = location + "/"
-            move(old, location)
         
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
@@ -109,7 +108,6 @@ class Storage:
             options['initialdir'] = self.config_path
         else:
             options['initialdir'] = self.ini['BACKUP LOCATION']
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Backup Folder'
@@ -118,13 +116,6 @@ class Storage:
             self.ini['BACKUP LOCATION'] = location + "/Backup/"
             if not exists(self.ini['BACKUP LOCATION']):
                 mkdir(self.ini['BACKUP LOCATION'])
-            if old:
-                move(join(old, 'journal_db'), self.ini['BACKUP LOCATION'])
-                message = 'Do you want to delete the backup directory at ' +\
-                old + '?'
-                delete = askyesno('Delete old directory?', message)
-                if delete:
-                    rmdir(old)
                                 
     def changeImportsDirectory(self):
         self.backup_opt = options = {}
@@ -133,15 +124,12 @@ class Storage:
             options['initialdir'] = self.config_path
         else:
             options['initialdir'] = location
-            old = options['initialdir']
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Imports Folder'
         location = askdirectory(**self.backup_opt)
         if location != '':
             self.ini['IMPORTS LOCATION'] = join(location, 'Journal Imports')
-            if old:
-                move(old, location)
             if not exists(self.ini['IMPORTS LOCATION']):
                 mkdir(self.ini['IMPORTS LOCATION'])
             
@@ -174,6 +162,7 @@ class Storage:
         backup_loc = self.ini['BACKUP LOCATION']
         backup_db = None
         fout = None
+        check = None
         if backup_loc:
             backup_db = join(backup_loc, 'journal_db')
             makedirs(backup_loc, exist_ok=True)
@@ -183,6 +172,18 @@ class Storage:
             fout = open(join(self.ini['BACKUP LOCATION'], 'journal_db'), "wb")
         pickle.dump(self.journal, fout)
         fout.close()
+        att_loc = join(self.config_path, 'Attachments\\')
+        try:
+            check = listdir(att_loc)
+        except FileNotFoundError:
+            None
+        if check:
+            try:
+                remove(join(backup_loc, 'Attachments.zip'))
+            except FileNotFoundError:
+                None
+            make_archive('Attachments', 'zip', backup_loc, att_loc)
+            move('Attachments.zip', backup_loc)
         date = DateTools.getCurrentDate()
         self.ini['LAST BACKUP'] = date
         self.last_backup.set(DateTools.getDateGUIFormat(date))
@@ -264,7 +265,8 @@ class Storage:
         return self.config_path
     
     def importEntry(self, jeif_path):
-        if exists(jeif_path):
+        if exists(jeif_path):    
+            path = self.ini['IMPORTS LOCATION']
             att_path = None
             fin = open(jeif_path)
             contents = fin.read()
@@ -280,12 +282,11 @@ class Storage:
                              'no associated date. The import file can be ' +\
                              'viewed in the attachments folder associated ' +\
                              'with this entry--\n\n' + body
-            att_path = join(self.config_path, 'Attachments\\' + 
-                            DateTools.getDateFileStorageFormat(date))
-            if not exists(att_path):
-                mkdir(att_path)
-                move(jeif_path, att_path)
-                tags = contents.split('<Tags>')[1].strip()
+            tags = contents.split('<Tags>')[1].strip()
+            if not tags:
+                tags = ['Untagged']
+                body += '--This entry was created without tags--'
+            else:
                 tags = tags.strip(',')
                 tags = tags.split(',')
                 tmp = tags.copy()
@@ -293,13 +294,30 @@ class Storage:
                     if tmp[i]:
                         tags.append(tmp[i].strip())
                     tags.pop(0)
-                if not tags:
-                    tags = ['Untagged']
-                entry = JObject.JEntry(date, body, tags)
-                self.journal.add(entry)
+            attachments = contents.split('<Attachment>')[1].strip()
+            if attachments:
+                attachments = attachments.strip(',')
+                attachments = attachments.split(',')
+                tmp = attachments.copy()
+                for i in range(0, len(tmp)):
+                    if tmp[i]:
+                        attachments.append(tmp[i].strip())
+                    attachments.pop(0)                    
+            att_path = join(self.config_path, 'Attachments\\' + 
+                            DateTools.getDateFileStorageFormat(date))
+            if not exists(att_path):
+                mkdir(att_path)
+                move(jeif_path, att_path)
             else:
                 remove(jeif_path)
-                
+            entry = JObject.JEntry(date=date, body=body, tags=tags, 
+                                   attachments=attachments)
+            self.journal.add(entry)
+            for item in attachments:
+                try:
+                    move(abspath(join(path, item)), att_path)
+                except FileNotFoundError:
+                    None
             
     def checkImports(self):
         path = self.ini['IMPORTS LOCATION']

@@ -6,7 +6,7 @@ Created on Thu Sep 29 16:45:07 2016
 """
 
 class JEntry:
-    def __init__(self, date=None, body=None, tags=None, parent=None):
+    def __init__(self, date=None, body=None, tags=None, parent=None, attachments=None):
         self.date = date      #datetime object
         self.body = body
         if not tags:
