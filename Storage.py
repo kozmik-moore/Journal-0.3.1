@@ -19,6 +19,7 @@ from os import rmdir
 from os import listdir
 from os import makedirs
 from shutil import move
+from shutil import make_archive
 import pickle
 from tkinter import BooleanVar
 from tkinter import IntVar
@@ -182,6 +183,15 @@ class Storage:
             fout = open(join(self.ini['BACKUP LOCATION'], 'journal_db'), "wb")
         pickle.dump(self.journal, fout)
         fout.close()
+        att_loc = join(self.config_path, 'Attachments\\')
+        check = listdir(att_loc)
+        if check:
+            try:
+                rmdir(join(backup_loc, 'Attachments.zip'))
+            except FileNotFoundError:
+                None
+            make_archive('Attachments', 'zip', backup_loc, att_loc)
+            move('Attachments.zip', backup_loc)
         date = DateTools.getCurrentDate()
         self.ini['LAST BACKUP'] = date
         self.last_backup.set(DateTools.getDateGUIFormat(date))
@@ -263,7 +273,8 @@ class Storage:
         return self.config_path
     
     def importEntry(self, jeif_path):
-        if exists(jeif_path):
+        if exists(jeif_path):    
+            path = self.ini['IMPORTS LOCATION']
             att_path = None
             fin = open(jeif_path)
             contents = fin.read()
@@ -279,12 +290,11 @@ class Storage:
                              'no associated date. The import file can be ' +\
                              'viewed in the attachments folder associated ' +\
                              'with this entry--\n\n' + body
-            att_path = join(self.config_path, 'Attachments\\' + 
-                            DateTools.getDateFileStorageFormat(date))
-            if not exists(att_path):
-                mkdir(att_path)
-                move(jeif_path, att_path)
-                tags = contents.split('<Tags>')[1].strip()
+            tags = contents.split('<Tags>')[1].strip()
+            if not tags:
+                tags = ['Untagged']
+                body += '--This entry was created without tags--'
+            else:
                 tags = tags.strip(',')
                 tags = tags.split(',')
                 tmp = tags.copy()
@@ -292,13 +302,27 @@ class Storage:
                     if tmp[i]:
                         tags.append(tmp[i].strip())
                     tags.pop(0)
-                if not tags:
-                    tags = ['Untagged']
-                entry = JObject.JEntry(date, body, tags)
-                self.journal.add(entry)
+            attachments = contents.split('<Attachment>')[1].strip()
+            if attachments:
+                attachments = attachments.strip(',')
+                attachments = attachments.split(',')
+                tmp = attachments.copy()
+                for i in range(0, len(tmp)):
+                    if tmp[i]:
+                        attachments.append(tmp[i].strip())
+                    attachments.pop(0)                    
+            att_path = join(self.config_path, 'Attachments\\' + 
+                            DateTools.getDateFileStorageFormat(date))
+            if not exists(att_path):
+                mkdir(att_path)
+                move(jeif_path, att_path)
             else:
                 remove(jeif_path)
-                
+            entry = JObject.JEntry(date=date, body=body, tags=tags, 
+                                   attachments=attachments)
+            self.journal.add(entry)
+            for item in attachments:
+                move(abspath(join(path, item)), att_path)              
             
     def checkImports(self):
         path = self.ini['IMPORTS LOCATION']
