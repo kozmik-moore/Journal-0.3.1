@@ -92,6 +92,7 @@ class Storage:
         self.dir_opt = options = {}
         if not self.ini['SAVE LOCATION']:
             options['initialdir'] = self.config_path
+            old = options['initialdir']
         else:
             options['initialdir'] = self.ini['SAVE LOCATION']
             old = options['initialdir']
@@ -101,12 +102,13 @@ class Storage:
         location = askdirectory(**self.dir_opt)
         if location != '':
             self.ini['SAVE LOCATION'] = location + "/"
-            move(old, location)
+#            move(old, location)
         
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
         if not self.ini['BACKUP LOCATION']:
             options['initialdir'] = self.config_path
+            old = options['initialdir']
         else:
             options['initialdir'] = self.ini['BACKUP LOCATION']
             old = options['initialdir']
@@ -119,7 +121,7 @@ class Storage:
             if not exists(self.ini['BACKUP LOCATION']):
                 mkdir(self.ini['BACKUP LOCATION'])
             if old:
-                move(join(old, 'journal_db'), self.ini['BACKUP LOCATION'])
+#                move(join(old, 'journal_db'), self.ini['BACKUP LOCATION'])
                 message = 'Do you want to delete the backup directory at ' +\
                 old + '?'
                 delete = askyesno('Delete old directory?', message)
@@ -131,6 +133,7 @@ class Storage:
         location = self.ini['IMPORTS LOCATION']
         if not location:
             options['initialdir'] = self.config_path
+            old = options['initialdir']
         else:
             options['initialdir'] = location
             old = options['initialdir']
@@ -140,8 +143,8 @@ class Storage:
         location = askdirectory(**self.backup_opt)
         if location != '':
             self.ini['IMPORTS LOCATION'] = join(location, 'Journal Imports')
-            if old:
-                move(old, location)
+#            if old:
+#                move(old, location)
             if not exists(self.ini['IMPORTS LOCATION']):
                 mkdir(self.ini['IMPORTS LOCATION'])
             
@@ -187,7 +190,7 @@ class Storage:
         check = listdir(att_loc)
         if check:
             try:
-                rmdir(join(backup_loc, 'Attachments.zip'))
+                remove(join(backup_loc, 'Attachments.zip'))
             except FileNotFoundError:
                 None
             make_archive('Attachments', 'zip', backup_loc, att_loc)
