@@ -91,6 +91,7 @@ class Storage:
         self.dir_opt = options = {}
         if not self.ini['SAVE LOCATION']:
             options['initialdir'] = self.config_path
+            old = options['initialdir']
         else:
             options['initialdir'] = self.ini['SAVE LOCATION']
             old = options['initialdir']
