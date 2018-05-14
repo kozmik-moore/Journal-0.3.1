@@ -32,134 +32,160 @@ import sys
 
 class Storage:
     def __init__(self, master=None):
-#        self.config_path = path.abspath(getsourcefile(lambda:0)).strip('Storage.py')
-        self.config_path = ''
+        self.HOME = self.SAVE = self.BACKUP = self.IMPORTS = self.LAST_BACKUP = None
+        self.BACKUP_INTERVAL = 168
+        self.AUTOSAVE = False
+        self.FIRST_TIME = True
         self.getWorkingDir()
-        self.ini = {'SAVE LOCATION': None, 'BACKUP LOCATION': None, 
-                    'IMPORTS LOCATION': None, 'LAST BACKUP': None, 
-                    'BACKUP INTERVAL': 168, 'AUTOSAVE': False, 
-                    'FIRST TIME': True}
+        
         self.journal = None
         self.master = master
         self.auto_save = BooleanVar(master=self.master, name='Autosave', 
-                                    value=self.ini['AUTOSAVE'])
+                                    value=self.AUTOSAVE)
         self.backup_interval = IntVar(master=self.master, 
                                       name='Backup Interval', 
-                                      value=self.ini['BACKUP INTERVAL'])
+                                      value=self.BACKUP_INTERVAL)
         self.last_backup = StringVar(master=self.master, name='Last Backup', 
-                                     value=self.ini['LAST BACKUP'])
+                                     value=self.LAST_BACKUP)
         self.first_time = BooleanVar(self.master, name='First Time Use Flag', 
-                                     value=self.ini['FIRST TIME'])
+                                     value=self.FIRST_TIME)
         
-        self.createResourceFolder()
 #        self.createImportsDirectory()
         self.LoadIniFile()
+        self.createResourceFolder()
         self.openJournalFile()
         self.checkImports()
         self.runBackup()
          
     def LoadIniFile(self):
         try:
-            fin = open(self.config_path + "/Journal.ini", "rb")
-            self.ini = pickle.load(fin)
+            fin = open(join(self.HOME, "Journal.ini"), "rb")
+            ini_file = pickle.load(fin)
+            self.SAVE = ini_file['SAVE LOCATION']
+            self.BACKUP = ini_file['BACKUP LOCATION']
+            self.IMPORTS = ini_file['IMPORTS LOCATION']
+            self.auto_save.set(ini_file['AUTOSAVE'])
+            self.backup_interval.set(ini_file['BACKUP INTERVAL'])
+            if not ini_file['LAST BACKUP']:
+                self.last_backup.set('Never')
+            else:
+                self.LAST_BACKUP = ini_file['LAST BACKUP']
+                self.last_backup.set(DateTools.getDateGUIFormat(self.LAST_BACKUP))
+            try:
+                self.first_time.set(ini_file['FIRST TIME'])
+                self.FIRST_TIME = ini_file['FIRST TIME']
+            except KeyError:
+                self.FIRST_TIME = True
+                self.first_time.set(True)
         except FileNotFoundError:
             self.changeSaveDirectory()
-            fin = open(self.config_path + "/Journal.ini", "wb")
-            pickle.dump(self.ini, fin)
+            fin = open(join(self.HOME, "Journal.ini"), "wb")
         fin.close()
-        self.auto_save.set(self.ini['AUTOSAVE'])
-        self.backup_interval.set(self.ini['BACKUP INTERVAL'])
-        if not self.ini['LAST BACKUP']:
-            self.last_backup.set('Never')
-        else:
-            self.last_backup.set(DateTools.getDateGUIFormat(self.ini['LAST BACKUP']))
-        try:
-            self.first_time.set(self.ini['FIRST TIME'])
-        except KeyError:
-            self.ini['FIRST TIME'] = True
-            self.first_time.set(True)
+            
+    def saveIniFile(self):
+        ini_file = {'SAVE LOCATION': self.SAVE, 'BACKUP LOCATION': self.BACKUP, 
+                    'IMPORTS LOCATION': self.IMPORTS, 
+                    'LAST BACKUP': self.LAST_BACKUP, 
+                    'BACKUP INTERVAL': self.BACKUP_INTERVAL, 
+                    'AUTOSAVE': self.AUTOSAVE, 
+                    'FIRST TIME': self.FIRST_TIME}
+        fout = open(join(self.HOME, 'Journal.ini'), 'wb')
+        pickle.dump(ini_file, fout)
+        fout.close()
         
     def openJournalFile(self):
         try:
-            fin = open(self.ini['SAVE LOCATION'] + "/journal_db", "rb")
+            fin = open(join(self.SAVE, "journal_db"), "rb")
             self.journal = pickle.load(fin)
         except FileNotFoundError:
-            fin = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
+            fin = open(join(self.SAVE, "journal_db"), "wb")
             self.journal = JObject.JObject()
         fin.close()
         
     def changeSaveDirectory(self):
         self.dir_opt = options = {}
-        if not self.ini['SAVE LOCATION']:
-            options['initialdir'] = self.config_path
-            old = options['initialdir']
+        old = None
+        if not self.SAVE:
+            options['initialdir'] = self.HOME
         else:
-            options['initialdir'] = self.ini['SAVE LOCATION']
+            old = options['initialdir'] = self.SAVE
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Save Location'
         location = askdirectory(**self.dir_opt)
         if location != '':
-            self.ini['SAVE LOCATION'] = location + "/"
+            self.SAVE = location
+            new = join(self.SAVE, 'journal_db')
+            if not exists(new):
+                if old:
+                    move_db = askyesno('Move?', 'Do you want to move the old ' +\
+                                      'database to the new location?')
+                    if move_db:
+                        move(join(old, 'journal_db'), self.SAVE)
+                    else:
+                        self.saveJournal(self.journal)
+            self.saveIniFile()
         
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
-        if not self.ini['BACKUP LOCATION']:
-            options['initialdir'] = self.config_path
+        old = None
+        if not self.BACKUP:
+            options['initialdir'] = self.HOME
         else:
-            options['initialdir'] = self.ini['BACKUP LOCATION']
+            old = options['initialdir'] = self.BACKUP
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Backup Folder'
         location = askdirectory(**self.backup_opt)
         if location != '':
-            self.ini['BACKUP LOCATION'] = location + "/Backup/"
-            if not exists(self.ini['BACKUP LOCATION']):
-                mkdir(self.ini['BACKUP LOCATION'])
+            self.BACKUP = join(location , "Backup")
+            if not exists(self.BACKUP):
+                if old:
+                    move(old, self.BACKUP)
+                else:
+                    mkdir(self.BACKUP)
+            self.saveIniFile()
                                 
     def changeImportsDirectory(self):
         self.backup_opt = options = {}
-        location = self.ini['IMPORTS LOCATION']
+        location = self.IMPORTS
+        old = None
         if not location:
-            options['initialdir'] = self.config_path
+            options['initialdir'] = self.HOME
         else:
-            options['initialdir'] = location
+            old = options['initialdir'] = location
         options['mustexist'] = False
         options['parent'] = self.master
         options['title'] = 'Choose a Location for the Imports Folder'
         location = askdirectory(**self.backup_opt)
         if location != '':
-            self.ini['IMPORTS LOCATION'] = join(location, 'Journal Imports')
-            if not exists(self.ini['IMPORTS LOCATION']):
-                mkdir(self.ini['IMPORTS LOCATION'])
+            self.IMPORTS = join(location, 'Journal Imports')
+            if not exists(self.IMPORTS):
+                if old:
+                    move(old, self.IMPORTS)
+                else:
+                    mkdir(self.IMPORTS)
+            self.saveIniFile()
             
     def changeBackupSchedule(self):
-        self.ini['BACKUP INTERVAL'] = self.backup_interval.get()            
+        self.BACKUP_INTERVAL = self.backup_interval.get()            
         
     def toggleAutoSave(self):
         if self.auto_save.get() == True:
             self.auto_save.set(False)
         else:
             self.auto_save.set(True)
-        self.ini['AUTOSAVE'] = self.auto_save.get()
+        self.AUTOSAVE = self.auto_save.get()
         
     def changeFirstTimeFlag(self):
         self.first_time.set(False)
-        self.ini['FIRST TIME'] = False
-        
-#    def checkBackup(self):
-#        today = DateTools.getCurrentDate()
-#        if self.ini['LAST BACKUP']:
-#            if (today-self.ini['LAST BACKUP']).total_seconds() > self.ini['BACKUP INTERVAL']*3600:
-#                self.backupDatabase()
-#        else:
-#            self.backupDatabase()
+        self.FIRST_TIME = False
             
     def backupDatabase(self):
         """Backs up the database held by the storage object(not the one
         passed to the journal object) and updates associated variables"""
         
-        backup_loc = self.ini['BACKUP LOCATION']
+        backup_loc = self.BACKUP
         backup_db = None
         fout = None
         check = None
@@ -169,10 +195,10 @@ class Storage:
             fout = open(backup_db, "wb")
         else:
             self.changeBackupDirectory()
-            fout = open(join(self.ini['BACKUP LOCATION'], 'journal_db'), "wb")
+            fout = open(join(self.BACKUP, 'journal_db'), "wb")
         pickle.dump(self.journal, fout)
         fout.close()
-        att_loc = join(self.config_path, 'Attachments\\')
+        att_loc = join(self.HOME, 'Attachments')
         try:
             check = listdir(att_loc)
         except FileNotFoundError:
@@ -185,14 +211,14 @@ class Storage:
             make_archive('Attachments', 'zip', backup_loc, att_loc)
             move('Attachments.zip', backup_loc)
         date = DateTools.getCurrentDate()
-        self.ini['LAST BACKUP'] = date
+        self.LAST_BACKUP = date
         self.last_backup.set(DateTools.getDateGUIFormat(date))
             
     def getSaveDirectory(self):
-        return self.ini['SAVE LOCATION']
+        return self.SAVE
         
     def getBackupDirectory(self):
-        return self.ini['BACKUP LOCATION']
+        return self.BACKUP
         
     def getAutosaveVar(self):
         return self.auto_save
@@ -216,26 +242,21 @@ class Storage:
             return False
         
     def runBackup(self):
-        if self.ini['BACKUP INTERVAL'] != -1:
-            if not self.ini['BACKUP LOCATION']:
+        if self.BACKUP_INTERVAL != -1:
+            if not self.BACKUP:
                 self.changeBackupDirectory()
             today = DateTools.getCurrentDate()
-            if self.ini['LAST BACKUP']:
-                if (today-self.ini['LAST BACKUP']).total_seconds() > self.ini['BACKUP INTERVAL']*3600:
+            if self.LAST_BACKUP:
+                if (today-self.LAST_BACKUP).total_seconds() > self.BACKUP_INTERVAL*3600:
                     self.backupDatabase()
             else:
                 self.backupDatabase()
-    
-    def saveIniFile(self):
-        fout = open(self.config_path + '/Journal.ini', 'wb')
-        pickle.dump(self.ini, fout)
-        fout.close()
         
     def saveJournal(self, journal):
         """Saves the journal of the storage object (not the journal of the 
         journal object) [Is this the same journal?]"""
         
-        fout = open(self.ini['SAVE LOCATION'] + "/journal_db", "wb")
+        fout = open(join(self.SAVE, "journal_db"), "wb")
         pickle.dump(journal, fout)
         fout.close()
         
@@ -243,12 +264,12 @@ class Storage:
         None
         
     def createResourceFolder(self):
-        tmp = self.config_path+'/Resources'
+        tmp = join(self.HOME, 'Resources')
         if not exists(abspath(tmp)):
             mkdir(tmp)
             
 #    def createImportsDirectory(self):
-##        tmp = join(self.config_path, 'Imports')
+##        tmp = join(self.HOME, 'Imports')
 ##        if not exists(abspath(tmp)):
 ##            mkdir(tmp)
 #        None
@@ -257,16 +278,16 @@ class Storage:
         frozen = False
         if getattr(sys, 'frozen', False):
             frozen = True
-            self.config_path = sys._MEIPASS
+            self.HOME = sys._MEIPASS
         else:
-            self.config_path = dirname(abspath('Storage.py'))
+            self.HOME = dirname(abspath('Storage.py'))
             
     def getPath(self):
-        return self.config_path
+        return self.HOME
     
     def importEntry(self, jeif_path):
         if exists(jeif_path):    
-            path = self.ini['IMPORTS LOCATION']
+            path = self.IMPORTS
             att_path = None
             fin = open(jeif_path)
             contents = fin.read()
@@ -302,8 +323,8 @@ class Storage:
                 for i in range(0, len(tmp)):
                     if tmp[i]:
                         attachments.append(tmp[i].strip())
-                    attachments.pop(0)                    
-            att_path = join(self.config_path, 'Attachments\\' + 
+                    attachments.pop(0)
+            att_path = join(join(self.HOME, 'Attachments'), 
                             DateTools.getDateFileStorageFormat(date))
             if not exists(att_path):
                 mkdir(att_path)
@@ -320,7 +341,7 @@ class Storage:
                     None
             
     def checkImports(self):
-        path = self.ini['IMPORTS LOCATION']
+        path = self.IMPORTS
         if not path:
             self.changeImportsDirectory()
         check = None
@@ -332,7 +353,7 @@ class Storage:
             new = askyesno('Directory Not Found!', message)
             if new:
                 self.changeImportsDirectory()
-                path = self.ini['IMPORTS LOCATION']
+                path = self.IMPORTS
                 check = listdir(path)
         if check:
             for file in check:
