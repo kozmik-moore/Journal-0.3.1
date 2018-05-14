@@ -11,6 +11,7 @@ import tkinter.ttk as ttk
 from math import ceil
 from math import sqrt
 import tkinter.simpledialog as simpledialog
+from os.path import join
 
 class TagsManager(TagSelectionManager):
     def __init__(self, master, journal, entry):
@@ -143,22 +144,25 @@ class TagButton(ttk.Button):
     def __init__(self, master, controller, tag, **kw):
         self.master = master
         self.controller = controller
-        self.tag = tag                     #Expects a String
+        self.tag = tag                    #Expects a String
+        self.args = kw
         self.dialog = None
         self.entry = None
+        self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
         ttk.Button.__init__(self, master, text=self.tag, 
-                            command=self.changeButton, **kw)
+                            command=self.changeButton)
         
     def changeButton(self):
         """Creates a dialog window so that the user can change the Button's tag"""
-        kw = {'bg': 'slate gray'}
-        self.dialog = tk.Toplevel(**kw)
+#        kw = {'bg': 'slate gray'}
+        self.dialog = tk.Toplevel(bg='black')
         self.dialog.grab_set()
         self.dialog.title('Edit Tag')
-        message = tk.Message(self.dialog, text='Enter a new tag here: ', **kw)
+        self.dialog.iconbitmap(self.iconpath)
+        message = ttk.Label(self.dialog, text='Enter a new tag here: ')
         self.entry = ttk.Entry(self.dialog)
         self.entry.insert(0, self.tag)
-        frame = tk.Frame(self.dialog, **kw)
+        frame = ttk.Frame(self.dialog)
         OK = ttk.Button(frame, text='OK', command=self.updateTags)
         DELETE = ttk.Button(frame, text='Delete', 
                             command=self.destroyButton)
@@ -185,30 +189,33 @@ class TagButton(ttk.Button):
         self.dialog = None
         self.destroy()
         
-class TagsFrame(tk.Frame, TagsManager):
+class TagsFrame(ttk.Frame, TagsManager):
     def __init__(self, master, journal, entry, **kw):
         self.journal = journal
         self.entry = entry
-        self.frame_args = kw
+        self.args = kw
+        self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
         
         self.tags_var = None
         TagsManager.__init__(self, self, journal, entry)
         
-        tk.Frame.__init__(self, master, **kw)
+        ttk.Frame.__init__(self, master)
         self.config()
         self.ybar = ttk.Scrollbar(self)
-        canvas_frame = tk.Frame(self, bg='slate gray')
-        self.canvas = tk.Canvas(canvas_frame, yscrollcommand=self.ybar.set, bg='slate gray')
+        canvas_frame = ttk.Frame(self)
+        self.canvas = tk.Canvas(canvas_frame, yscrollcommand=self.ybar.set, 
+                                bg=self.args['secondarycolor'])
         self.ybar.config(command=self.canvas.yview)
-        button_frame = tk.Frame(self)
-        self.TAGS = ttk.Button(button_frame, takefocus=0, width=10, text='Tags', state='disabled', 
+        button_frame = ttk.Frame(self, relief=self.args['relief'], 
+                                 border=self.args['border'])
+        self.TAGS = ttk.Button(button_frame, takefocus=0, text='Tags', state='disabled', 
                                command=self.displayTagsDialog, style='Tags.Bold.UI.TButton')
-        self.ADD = ttk.Button(button_frame, takefocus=0, width=10, text='Add', 
+        self.ADD = ttk.Button(button_frame, takefocus=0, text='Add', 
                               command=self.displayAddDialog, style='Tags.Bold.UI.TButton')
         self.TAGS.grid(row=0, column=0)
         self.ADD.grid(row=1, column=0)
         self.canvas.grid(row=0, column=1)
-        button_frame.grid(row=0, column=0, sticky='nw')
+        button_frame.grid(row=0, column=0, sticky='nwes')
         canvas_frame.grid(row=0, column=1, sticky='nw', padx=4)
         self.update_idletasks()
         self.dialog = None
@@ -230,17 +237,19 @@ class TagsFrame(tk.Frame, TagsManager):
         self.ybar.grid_forget()
         for f in self.canvas.grid_slaves():
             f.destroy()
-        frame = tk.Frame(self.canvas, bg='slate gray')
+        frame = ttk.Frame(self.canvas)
         frame.grid(sticky='nw')
         height=1
         for var in sorted(self.getStatesStrings()):
-            button = TagButton(frame, self, var, takefocus=0, style='Bold.UI.TButton')                
+            button = TagButton(frame, self, var, takefocus=0, 
+                               style='Tags.Variable.UI.TButton', **self.args)                
             button.pack(side='left')
             self.update_idletasks()
             if frame.winfo_width()+self.TAGS.winfo_width()>=self.winfo_width():
-                frame = tk.Frame(self.canvas, bg='slate gray')
+                frame = ttk.Frame(self.canvas)
                 button.destroy()
-                button = TagButton(frame, self, var, takefocus=0, style='Bold.UI.TButton')
+                button = TagButton(frame, self, var, takefocus=0, style='Bold.UI.TButton', 
+                                   **self.args)
                 frame.grid(sticky='nw')
                 height+=1
                 button.pack(side='left')
@@ -253,14 +262,15 @@ class TagsFrame(tk.Frame, TagsManager):
     def displayTagsDialog(self):
         self.tags_var = self.getAllTags()
         
-        self.dialog = tk.Toplevel(master=self, **self.frame_args)
+        self.dialog = tk.Toplevel(master=self, bg=self.args['primarycolor'])
         self.dialog.config(relief='flat')
         self.dialog.title('Tags')
-        canvas = tk.Canvas(self.dialog, highlightthickness=0, **self.frame_args)
+        self.dialog.iconbitmap(self.iconpath)
+        canvas = tk.Canvas(self.dialog, highlightthickness=0, bg=self.args['secondarycolor'])
         canvas.config(relief='flat')
         for tag in self.tags_var:
-            self.tags_var[tag][1] = tk.Checkbutton(master=canvas, text=tag, 
-                        variable=self.tags_var[tag][0], bg='slate gray')
+            self.tags_var[tag][1] = ttk.Checkbutton(master=canvas, text=tag, 
+                        variable=self.tags_var[tag][0])
             tmp = sorted(self.tags_var.keys())
             row = ceil(sqrt(len(tmp)))
             col = ceil(len(self.tags_var) / row)
@@ -284,11 +294,12 @@ class TagsFrame(tk.Frame, TagsManager):
     def displayAddDialog(self):
         self.tags_var = tk.StringVar()
         
-        self.dialog = tk.Toplevel(**self.frame_args)
+        self.dialog = tk.Toplevel(bg=self.args['primarycolor'])
         self.dialog.title('Add')
+        self.dialog.iconbitmap(self.iconpath)
         text = 'Enter at least one tag, separating multiple tags with a comma: '
-        message = tk.Message(self.dialog, aspect=400, text=text, **self.frame_args)
-        message.config(relief='flat')
+        message = ttk.Label(self.dialog, text=text)
+#        message.config(relief='flat')
         entry = tk.Entry(self.dialog, textvariable=self.tags_var)
         message.pack()
         entry.pack(expand=True, fill='x')
@@ -309,7 +320,8 @@ class TagsFrame(tk.Frame, TagsManager):
 
     def createAddDialog(self):
         tags = simpledialog.askstring(title='Add Tags', 
-                                      prompt='Enter at least one tag, separating multiple tags with a comma:')
+                                      prompt='Enter at least one tag, ' +\
+                                      'separating multiple tags with a comma:')
         if tags:
             tags = tags.split(',')
             for tag in tags:

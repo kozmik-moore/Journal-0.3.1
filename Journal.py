@@ -21,55 +21,47 @@ from AttachmentTools import AttachmentManager
 class Main(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
+        style = JournalStyle()
+        style.setNightStyle()
+#        primary = style.getPrimary()
+#        secondary = style.getSecondary()
+#        text = style.getTextColor()
+        self.custom_values = style.getCustomValues()
         
         w, h = self.winfo_screenwidth(), self.winfo_screenheight()
         self.geometry("%dx%d+0+0" % (w*.95, h*.8))
-        self.config(background='slate gray')
+        self.config(bg=self.custom_values['primarycolor'])
 #        self.overrideredirect(1)
         self.title('kunnekted-jurnl')
         self.storage = Storage()
-        self.app_loc = self.storage.getPath()
-        iconpath = join(self.app_loc, 'Resources\\web.ico')
+        self.custom_values['homepath'] = self.storage.getPath()
+        iconpath = join(self.custom_values['homepath'], 'Resources\\web.ico')
         self.iconbitmap(iconpath)
-        messagepath = (join(self.app_loc, 'Resources\\Messages'))
+        messagepath = (join(self.custom_values['homepath'], 'Resources\\Messages'))
         messagefile = open(messagepath)
         self.messages = messagefile.read()
-#        self.storage.LoadIniFile()
-#        self.storage.openJournalFile()
         self.journal = self.storage.getJournal()
-#        self.storage.runBackup()
         self.entry = JEntry()
-        kw = {'journal':self.journal, 'jentry': self.entry, 
-                    'icon': iconpath, 'messages': self.messages,
-                    'app': self.app_loc, 'controller': self, 
-                    'bg': 'slate gray'}
-   
-        style = JournalStyle()
-        style.setNightStyle()
         
         self.backup_interval_var = self.storage.getBackupIntervalVar()
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
         
-        self.top_frame = tk.Frame(self, bg='slate gray')
-#        top_left_frame = tk.Frame(self.top_frame, width=100)
+        self.top_frame = ttk.Frame(self)
         self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, 
-                                    self, width=100, bg='slate gray')
-        top_right_frame = tk.Frame(self.top_frame, bg='slate gray')
-        self.body_frame = BodyFrame(self, self.entry, bg='slate gray')
-        self.body_frame.config(border=5, relief='ridge')
-        self.tags_frame = TagsFrame(self, self.journal, self.entry, bg='slate gray',
-                                    relief='ridge', border=5)
-        self.lower_frame = tk.Frame(self, bg='slate gray')
-        self.lower_left = tk.Frame(self.lower_frame, bg='slate gray')
-        self.options_frame = tk.Frame(self.lower_frame, bg='slate gray', 
-                                      relief='ridge', border=5)
-        self.lower_right = tk.Frame(self.lower_frame, bg='slate gray')
+                                    self, width=100, **self.custom_values)
+        top_right_frame = ttk.Frame(self.top_frame)
+        self.body_frame = BodyFrame(self, self.entry, **self.custom_values)
+        self.tags_frame = TagsFrame(self, self.journal, self.entry, **self.custom_values)
+        self.lower_frame = ttk.Frame(self)
+        self.lower_left = ttk.Frame(self.lower_frame)
+        self.options_frame = ttk.Frame(self.lower_frame, relief=self.custom_values['relief'], 
+                                       border=self.custom_values['border'])
+        self.lower_right = ttk.Frame(self.lower_frame)
         self.jgraph = JGraph(self.options_frame, self, self.journal, 
-                             self.entry, self.app_loc, bg='slate gray')
-        self.attachmanager = AttachmentManager(self.options_frame, self, 
-                                               self.app_loc, self.journal, 
-                                               self.entry, bg='slate gray')
+                             self.entry, **self.custom_values)
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, 
+                                               self.entry, **self.custom_values)
 
 #        top_left_frame.grid(row=0, column=1)
         self.date_frame.grid(row=0, column=0, padx=5, sticky='w')
@@ -107,25 +99,31 @@ class Main(tk.Tk):
         self.jgraph.grid(row=0, column=2, rowspan=2)
         self.attachmanager.grid(row=0, column=4, rowspan=2)
         
-        menubar = tk.Menu(self, bg='slate gray')
+        menubar = tk.Menu(self, bg=self.custom_values['primarycolor'], 
+                          fg=self.custom_values['textcolor1'])
         
-        journal_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
+        journal_menu = tk.Menu(menubar, bg=self.custom_values['primarycolor'], 
+                               fg=self.custom_values['textcolor1'], tearoff=0)
         journal_menu.add_command(label='Save All Changes', 
                                  command=self.writeToDatabase)
-        pref_menu = tk.Menu(journal_menu, bg='slate gray', tearoff=0)
+        pref_menu = tk.Menu(journal_menu, bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'], 
+                            tearoff=0)
         journal_menu.add_cascade(label='Database Preferences', menu=pref_menu)
         journal_menu.add_command(label='Quit', command=self.destroyApp)
         
-        entry_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
+        entry_menu = tk.Menu(menubar, bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'], 
+                             tearoff=0)
         entry_menu.add_command(label='Save', command=self.save)
         entry_menu.add_command(label='Delete', command=self.delete)
 #        pref_menu.add_command(label='Autosave changes on exit', command=self.changeAutoSavePref)
         pref_menu.add_command(label="Change Save Directory", 
                               command=self.storage.changeSaveDirectory)
-        backup_menu = tk.Menu(pref_menu, bg='slate gray', tearoff=0)
+        backup_menu = tk.Menu(pref_menu, bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'], 
+                              tearoff=0)
         backup_menu.add_command(label='Change Backup Directory', 
                                 command=self.storage.changeBackupDirectory)
-        self.interval_menu = tk.Menu(backup_menu, bg='slate gray', tearoff=0)
+        self.interval_menu = tk.Menu(backup_menu, bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'], 
+                                     tearoff=0)
         self.interval_menu.add_command(label='Immediately', 
                                        command=self.storage.backupDatabase)
         self.interval_menu.add_radiobutton(label='Day', 
@@ -152,7 +150,8 @@ class Main(tk.Tk):
                               command=self.storage.changeImportsDirectory)
         
 
-        help_menu = tk.Menu(menubar, bg='slate gray', tearoff=0)
+        help_menu = tk.Menu(menubar, bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'], 
+                            tearoff=0)
         help_menu.add_command(label='Help', command=self.createHelpWindow)
         help_menu.add_command(label='Keyboard Shortcuts', 
                               command=self.createShortcutsWindow)
@@ -162,7 +161,7 @@ class Main(tk.Tk):
         menubar.add_cascade(label="Entry", menu=entry_menu)
         menubar.add_cascade(label="Help", menu=help_menu)
         self.config(menu=menubar)
-        menubar.config(bg='slate gray')
+        menubar.config(bg=self.custom_values['primarycolor'], fg=self.custom_values['textcolor1'])
         
         self.protocol("WM_DELETE_WINDOW", self.destroyApp)
         self.bindDateControl()
@@ -187,49 +186,17 @@ class Main(tk.Tk):
         self.createWindow('About', self.messages.split('<About>')[1], 
                           (200, 300))
         
-##        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
-##        main = messagebox.Message(title="About", message=text)
-#        main = tk.Toplevel(master=self)
-#        main.title('About')
-#        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
-#        message = tk.Message(main, text=text, bg='slate gray')
-#        message.pack()
-##        main.show()
-#        main.grab_set()
-        
     def createWindow(self, title, message, dims):
-##        text = message
-##        message = "Journal 0.3.1\nAuthor: kozmik-moore @ GitHub\nDeveloped using the Anaconda Suite (Python 3.6)"
-##        main = messagebox.Message(title="About", message=text)
-#        main = tk.Toplevel(master=self)
-#        main.title(title)
-#        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
-#        main.geometry(str(dims[0])+'x'+str(dims[1]))
-#        ybar = ttk.Scrollbar(main)
-#        canvas = tk.Canvas(main, yscrollcommand = ybar.set, 
-#                           width=dims[1],height=dims[0])
-#        frame = tk.Frame(canvas, bg='slate gray')
-#        ybar.config(command=canvas.yview)
-#        ybar.pack(side='right', fill='y')
-#        message = tk.Message(frame, text=message, bg='slate gray')
-#        canvas.pack(side='left', fill='both', expand=True)
-#        canvas.create_window(0,0,window=frame, anchor='nw')
-#        message.pack()
-##        frame.pack(fill='both', expand=True)
-#        main.update()
-#        canvas.config(scrollregion=canvas.bbox('all'))
-##        main.show()
-#        main.focus_force()
-#        main.grab_set()
-        main = tk.Toplevel()
+        main = tk.Toplevel(bg=self.custom_values['primarycolor'])
         main.title(title)
-        main.iconbitmap(join(self.app_loc, 'Resources\web.ico'))
+        main.iconbitmap(join(self.custom_values['homepath'], 'Resources\web.ico'))
 #        main.geometry(str(dims[0])+'x'+str(dims[1]))
-        outerframe = tk.Frame(main, bg='slate gray')
-        frame = tk.Frame(outerframe, bg='slate gray')
+        outerframe = ttk.Frame(main)
+        frame = ttk.Frame(outerframe)
         ybar = ttk.Scrollbar(frame)
-        text=tk.Text(frame, bg='slate gray', yscrollcommand=ybar.set, 
-                     wrap='word', font='TkMenuFont')
+        text=tk.Text(frame, yscrollcommand=ybar.set, 
+                     wrap='word', font='TkMenuFont', bg=self.custom_values['primarycolor'], 
+                     fg=self.custom_values['textcolor1'])
         ybar.config(command=text.yview)
         text.insert('insert', message)
         text.config(state='disabled')
@@ -299,7 +266,7 @@ class Main(tk.Tk):
         
     def writeToDatabase(self):
         self.save()
-        self.storage.saveJournal()
+        self.storage.saveJournal(self.journal)
         
     def delete(self):
         date = self.entry.getDate()
@@ -330,25 +297,36 @@ class JournalStyle(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
         self.frame_list = []
+        self.tk_options = {}
+        self.primary = None
+        self.secondary = None
+        self.text_color1 = None
+        self.text_color2 = None
+        self.text_color3 = None
+        self.frame_borderwidth = 4
+        self.frame_relief = 'groove'
+        self.frame_background = None
         self.theme_create('shadow', parent='default')
         self.theme_settings('shadow', {
                 'TButton': {
-                        'configure': {'padding': 3, 'foreground': 'black', 'relief': 'raised',
-                                      'font': 'TkDefaultFont', 'background': 'slate gray', 
-                                      'anchor': 'center', 'borderwidth': 1, 'width':15},
+                        'configure': {'padding': 3, 'foreground': 'white', 'relief': 'raised',
+                                      'font': 'TkDefaultFont', 'background': 'black', 
+                                      'anchor': 'center', 'borderwidth': 4, 'width':18},
                         'layout': 
                             [('Button.border', {'sticky': 'nswe', 'children': 
                                 [('Button.focus', {'sticky': 'nswe', 'children': 
                                     [('Button.padding', {'sticky': 'nswe', 'children': 
                                         [('Button.label', {'sticky': 'nswe', 'expand':1})]})]})]})],
-                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
-                                               ('active', 'black')],
-                                'background': [('disabled', 'slate gray'), ('pressed', 'slate gray'), 
-                                               ('active', 'light slate gray')],
+                        'map': {'foreground': [('disabled', 'gray40'), ('pressed', 'white'), 
+                                               ('active', 'white')],
+                                'background': [('disabled', 'black'), ('pressed', 'gray20'), 
+                                               ('active', 'gray10')],
                                 'relief': [('pressed', 'flat'), ('!pressed', 'raised')]}},
                 'TLabel': {
-                        'configure': {'background': 'slate gray', 'foreground': 'black'}},
+                        'configure': {'background': 'black', 'foreground': 'white'}},
                 'TCombobox': {
+                        'configure': {'fieldbackground': 'gray10', 'arrowcolor': 'gray50',
+                                       'background': 'black'},
 #                        'layout': 
 #                            [('Combobox.border', {'sticky': 'nswe', 'children': 
 #                                [('Combobox.rightdownarrow', {'side': 'right', 'sticky': 'news'}), 
@@ -358,35 +336,95 @@ class JournalStyle(ttk.Style):
                         'map': {'focusfill': [('readonly', 'focus', 'SystemHighlight')], 
                                 'foreground': [('disabled', 'SystemGrayText'), 
                                                ('readonly', 'focus', 'black')], 
-                                'selectforeground': [('!focus', 'black'), ('focus', 'black')], 
-                                'selectbackground': [('!focus', 'white'), ('focus', 'gray70')]}},
+                                'selectforeground': [('readonly', 'white')], 
+                                'selectbackground': [('readonly', 'gray10')]}},
+                'TEntry': {
+                        'configure': {'background': 'white'}},
                 'TCheckbutton': {
-                        'configure': {'indicatoron': 1}},
-                'TScrollbar': {
-                        'configure': {'background': 'slate gray', 'foreground': 'white'}},
+                        'configure': {'foreground': 'white', 'background': 'black', 
+                                      'font': ('TkDefaultFont','10'), 'indicatorcolor': 'black'},
+                        'layout': [('Checkbutton.padding', {'sticky': 'nswe', 'children': 
+                                    [('Checkbutton.indicator', {'side': 'left', 'sticky': ''}), ('Checkbutton.focus', {'side': 'left', 'sticky': 'w', 'children': 
+                                        [('Checkbutton.label', {'sticky': 'nswe'})]})]})],
+                        'map': {'indicatorcolor': [('pressed', 'white'), ('selected', 'blue')]}},
+                'TRadiobutton': {
+                        'configure': {'foreground': 'white', 'background': 'black', 
+                                      'indicatorcolor': 'black', 'padding': 3},
+                        'layout': [('Radiobutton.padding', {'sticky': 'nswe', 'children': 
+                            [('Radiobutton.indicator', {'side': 'left', 'sticky': ''}), ('Radiobutton.focus', {'side': 'left', 'sticky': '', 'children': 
+                                [('Radiobutton.label', {'sticky': 'nswe'})]})]})],
+                        'map': {'indicatorcolor': [('pressed', 'white'), ('selected', 'blue')]}},
+                'Vertical.TScrollbar': {
+                        'configure': {'background': 'black', 'troughcolor': 'gray30', 'arrowcolor': 'white'}},
+                'Horizontal.TScrollbar': {
+                        'configure': {'background': 'black', 'troughcolor': 'gray30', 'arrowcolor': 'white'}},
                 'UI.TButton': {
-                        'configure': {'width': ''}},
+                        'configure': {}},
                 'Current.UI.TButton': {
-                        'configure': {'background': 'black', 'foreground': 'white'},
-                        'map': {'foreground': [('active', 'white'), ('pressed', 'white')],
-                                               'background': [('active', 'gray10'), ('pressed', 'gray10')]}},
+                        'configure': {'background': 'black', 'foreground': 'DeepSkyBlue2'},
+                        'map': {'foreground': [('active', 'DeepSkyBlue2')]}},
                 'Bold.UI.TButton': {
                         'configure': {'font': ('TkDefault', '9', 'bold')}},
                 'Tags.Bold.UI.TButton': {
-                        'configure':{'foreground': 'black', 
-                                     'font': ('TkDefault', '9', 'bold', 'underline')},
-                        'map': {'foreground': [('disabled', 'dark slate gray'), ('pressed', 'black'), 
-                                               ('active', 'black')]}}})
+                        'configure':{'font': ('TkDefault', '9', 'bold', 'underline')}},
+                'Tags.Variable.UI.TButton': {'width': ''},
+                'Grooved.TFrame': {
+                        'configure': {'borderwidth': 8, 'relief': 'groove'}},
+                'TFrame': {
+                        'configure': {'background': 'black'}}
+                })
 
         
     def setDayStyle(self):
         self.theme_use('default')
+        self.setBGColorsTK('gray', 'gray')
         
     def setNightStyle(self):
         self.theme_use('shadow')
+        self.setBGColorsTK('black', 'gray8')
+        self.setTextColorTK('white')
+        self.setCustomFrameBG('black')
+        textcolors = {'1': 'white', '2': 'lime green', '3': 'DeepSkyBlue2'}
+        self.setTextColors(textcolors)
         
     def addFrame(self, frame):
         self.frame_list.append(frame)
+        
+    def setBGColorsTK(self, color1, color2):
+        self.primary = color1
+        self.secondary = color2
+        
+    def setTextColors(self, kw):
+        self.text_color1 = kw['1']
+        self.text_color2 = kw['2']
+        self.text_color3 = kw['3']
+        
+    def setTextColorTK(self, color):
+        self.text_color = color
+        
+    def setCustomFrameBG(self, color):
+        self.frame_background = color
+        
+    def getBGColors(self):
+        return self.primary, self.secondary
+    
+    def getPrimary(self):
+        return self.primary
+    
+    def getSecondary(self):
+        return self.secondary
+    
+    def getTextColor(self):
+        return self.text_color
+    
+    def getButtonBorderWidth(self):
+        return self.button_bwidth
+    
+    def getCustomValues(self):
+        return {'relief': self.frame_relief, 'border': self.frame_borderwidth, 
+                'primarycolor': self.primary, 'secondarycolor': self.secondary, 
+                'textcolor1': self.text_color1, 'textcolor2': self.text_color2, 
+                'textcolor3': self.text_color3}
             
         
 app=Main()
