@@ -29,7 +29,7 @@ class AttachmentManager(tk.Frame):
         self.controller = controller
         self.journal = jobject
         self.entry = jentry
-        self.custom_values = kw
+        self.args = kw
         self.all_attachments = []
         self.dialog = None
         self.frame = None
@@ -37,9 +37,9 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = None
         self.delete_icon = None
         
-        self.trashcan = join(self.custom_values['homepath'], 'Resources\\Trash_Can-512.png')
-        self.app_icon = join(self.custom_values['homepath'], 'Resources\\web.ico')
-        self.parentpath = join(self.custom_values['homepath'], 'Attachments\\')        
+        self.trashcan = join(self.args['homepath'], 'Resources\\Trash_Can-512.png')
+        self.app_icon = join(self.args['homepath'], 'Resources\\web.ico')
+        self.parentpath = join(self.args['homepath'], 'Attachments\\')        
         try:
             mkdir(self.parentpath)
         except FileExistsError:
@@ -169,16 +169,15 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = []
         
         if self.all_attachments:
-            self.dialog = tk.Toplevel(bg=self.custom_values['secondarycolor'])
+            self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
             self.dialog.title('Attachments')
             self.dialog.iconbitmap(self.app_icon)
             self.dialog.maxsize(width=self.dialog.winfo_screenwidth(), 
                                 height=self.dialog.winfo_screenheight())
             self.dialog.minsize(width=250, height=70)
             
-            self.frame = tk.Frame(self.dialog, bg='slate gray')
-#            topframe = tk.Frame(self.frame, bg='slate gray')
-            bottomframe = tk.Frame(self.dialog)
+            self.frame = ttk.Frame(self.dialog)
+            bottomframe = ttk.Frame(self.dialog)
             
             for filepath in self.all_attachments:
                 path = abspath(filepath)
@@ -212,12 +211,9 @@ class AttachmentManager(tk.Frame):
         self.dialog.title('Delete')
         
         for item in self.buttonlist:
-            checkbutton = tk.Checkbutton(self.frame, 
+            checkbutton = ttk.Checkbutton(self.frame, 
                                          text=item[0].cget('text'), 
-                                         var=item[1], bg='slate gray', 
-                                         fg='black', 
-                                         activebackground='light slate gray',
-                                         activeforeground='black')
+                                         var=item[1])
             checkbutton.pack(side=tk.TOP, expand=True, fill=tk.X, pady=2)
             
         w = self.DELETE.winfo_width()

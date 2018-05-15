@@ -13,13 +13,13 @@ class BodyFrame(ttk.Frame):
     def __init__(self, master=None, entry=None, **kw):
         root = None
         self.master = master
-        self.frame_args = kw
+        self.args = kw
         if not self.master:
             root = tk.Tk()
             ttk.Frame.__init__(self, root)
         else:
-            ttk.Frame.__init__(self, self.master, relief=self.frame_args['relief'],
-                               border=self.frame_args['border'])
+            ttk.Frame.__init__(self, self.master, relief=self.args['relief'],
+                               border=self.args['border'])
         body_font = font.Font(family='Georgia', size=11)
         self.entry = entry
         if not self.entry:
@@ -27,8 +27,8 @@ class BodyFrame(ttk.Frame):
         
         self.scrollbar = ttk.Scrollbar(self)
         self.body_field = tk.Text(self, font=body_font, yscrollcommand=self.scrollbar.set,
-                               wrap=tk.WORD, bg=self.frame_args['secondarycolor'], 
-                               fg='lime green', 
+                               wrap=tk.WORD, bg=self.args['bgcolor2'], 
+                               fg=self.args['textcolor2'], 
                                insertbackground='white', height=20)        
         self.scrollbar.config(command=self.body_field.yview)
         self.body_field.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)

@@ -117,7 +117,7 @@ class DateFilter(TagSelectionManager):
         self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
         
     def createFilterDialog(self):
-        self.dialog = tk.Toplevel(bg=self.args['primarycolor'])
+        self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
         self.dialog.title("Filters")
         self.dialog.iconbitmap(self.iconpath)
         top = ttk.Frame(self.dialog)
@@ -125,7 +125,7 @@ class DateFilter(TagSelectionManager):
         bottom = ttk.Frame(self.dialog)
         
         canvas = tk.Canvas(self.dialog, highlightthickness=0, 
-                           bg=self.args['secondarycolor'])
+                           bg=self.args['bgcolor1'])
         canvas.pack()
         tagslist = self.getVarsDict()
         if tagslist:

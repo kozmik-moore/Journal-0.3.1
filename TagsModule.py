@@ -149,13 +149,13 @@ class TagButton(ttk.Button):
         self.dialog = None
         self.entry = None
         self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
-        ttk.Button.__init__(self, master, text=self.tag, 
-                            command=self.changeButton)
+        ttk.Button.__init__(self, master, text=self.tag, width='', 
+                            style='Tags.Variable.UI.TButton', command=self.changeButton)
         
     def changeButton(self):
         """Creates a dialog window so that the user can change the Button's tag"""
 #        kw = {'bg': 'slate gray'}
-        self.dialog = tk.Toplevel(bg='black')
+        self.dialog = tk.Toplevel(self.args['bgcolor1'])
         self.dialog.grab_set()
         self.dialog.title('Edit Tag')
         self.dialog.iconbitmap(self.iconpath)
@@ -204,7 +204,7 @@ class TagsFrame(ttk.Frame, TagsManager):
         self.ybar = ttk.Scrollbar(self)
         canvas_frame = ttk.Frame(self)
         self.canvas = tk.Canvas(canvas_frame, yscrollcommand=self.ybar.set, 
-                                bg=self.args['secondarycolor'])
+                                bg=self.args['bgcolor2'])
         self.ybar.config(command=self.canvas.yview)
         button_frame = ttk.Frame(self, relief=self.args['relief'], 
                                  border=self.args['border'])
@@ -225,8 +225,7 @@ class TagsFrame(ttk.Frame, TagsManager):
         if self.getAllTags():
             self.TAGS.config(state='normal')
         self.updateActiveTagsList(entry)
-        self.placeTags()
-#        print('Tagsframe width: ', self.winfo_width())           
+        self.placeTags()          
         
     def clearGUI(self, entry):
         self.entry = entry
@@ -241,8 +240,7 @@ class TagsFrame(ttk.Frame, TagsManager):
         frame.grid(sticky='nw')
         height=1
         for var in sorted(self.getStatesStrings()):
-            button = TagButton(frame, self, var, takefocus=0, 
-                               style='Tags.Variable.UI.TButton', **self.args)                
+            button = TagButton(frame, self, var, takefocus=0, **self.args)                
             button.pack(side='left')
             self.update_idletasks()
             if frame.winfo_width()+self.TAGS.winfo_width()>=self.winfo_width():
@@ -254,19 +252,17 @@ class TagsFrame(ttk.Frame, TagsManager):
                 height+=1
                 button.pack(side='left')
                 self.update_idletasks()
-#            print('Frame width: ', button.cget('text'), frame.winfo_width())
         if height>3:
             self.ybar.grid(column=2, row=0, sticky='nse')
-#        print('Canvas width: ', self.canvas.winfo_width())
                 
     def displayTagsDialog(self):
         self.tags_var = self.getAllTags()
         
-        self.dialog = tk.Toplevel(master=self, bg=self.args['primarycolor'])
-        self.dialog.config(relief='flat')
+        self.dialog = tk.Toplevel(master=self, bg=self.args['bgcolor1'])
+#        self.dialog.config(relief='flat')
         self.dialog.title('Tags')
         self.dialog.iconbitmap(self.iconpath)
-        canvas = tk.Canvas(self.dialog, highlightthickness=0, bg=self.args['secondarycolor'])
+        canvas = tk.Canvas(self.dialog, highlightthickness=0, bg=self.args['bgcolor1'])
         canvas.config(relief='flat')
         for tag in self.tags_var:
             self.tags_var[tag][1] = ttk.Checkbutton(master=canvas, text=tag, 
@@ -294,7 +290,7 @@ class TagsFrame(ttk.Frame, TagsManager):
     def displayAddDialog(self):
         self.tags_var = tk.StringVar()
         
-        self.dialog = tk.Toplevel(bg=self.args['primarycolor'])
+        self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
         self.dialog.title('Add')
         self.dialog.iconbitmap(self.iconpath)
         text = 'Enter at least one tag, separating multiple tags with a comma: '
