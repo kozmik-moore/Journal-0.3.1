@@ -330,7 +330,7 @@ class JournalStyle(ttk.Style):
                 'TButton': {
                         'configure': {'padding': 3, 'foreground': 'white', 'relief': 'raised',
                                       'font': 'TkDefaultFont', 'background': 'black', 
-                                      'anchor': 'center', 'borderwidth': 4, 'width':18},
+                                      'anchor': 'center', 'borderwidth': 4, 'width': 18},
                         'map': {'foreground': [('disabled', 'gray40'), ('pressed', 'white'), 
                                                ('active', 'white')],
                                 'background': [('disabled', 'black'), ('pressed', 'gray20'), 
@@ -367,7 +367,8 @@ class JournalStyle(ttk.Style):
                         'configure': {'font': ('TkDefault', '9', 'bold')}},
                 'Tags.Bold.UI.TButton': {
                         'configure':{'font': ('TkDefault', '9', 'bold', 'underline')}},
-                'Tags.Variable.UI.TButton': {'width': ''},
+                'Tags.Variable.UI.TButton': {
+                        'configure': {'width': ''}},
                 'TFrame': {
                         'configure': {'background': 'black'}},
                 'TMenubutton': {
