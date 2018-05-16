@@ -149,13 +149,16 @@ class TagButton(ttk.Button):
         self.dialog = None
         self.entry = None
         self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
-        ttk.Button.__init__(self, master, text=self.tag, width='', 
+        width = ''
+        if len(self.tag) > 20:
+            width = len(self.tag)
+        ttk.Button.__init__(self, master, text=self.tag, width=width, 
                             style='Tags.Variable.UI.TButton', command=self.changeButton)
         
     def changeButton(self):
         """Creates a dialog window so that the user can change the Button's tag"""
 #        kw = {'bg': 'slate gray'}
-        self.dialog = tk.Toplevel(self.args['bgcolor1'])
+        self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
         self.dialog.grab_set()
         self.dialog.title('Edit Tag')
         self.dialog.iconbitmap(self.iconpath)

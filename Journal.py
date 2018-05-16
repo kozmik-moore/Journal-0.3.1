@@ -368,7 +368,7 @@ class JournalStyle(ttk.Style):
                 'Tags.Bold.UI.TButton': {
                         'configure':{'font': ('TkDefault', '9', 'bold', 'underline')}},
                 'Tags.Variable.UI.TButton': {
-                        'configure': {'width': ''}},
+                        'configure': ''},
                 'TFrame': {
                         'configure': {'background': 'black'}},
                 'TMenubutton': {
