@@ -330,7 +330,7 @@ class JournalStyle(ttk.Style):
                 'TButton': {
                         'configure': {'padding': 3, 'foreground': 'white', 'relief': 'raised',
                                       'font': 'TkDefaultFont', 'background': 'black', 
-                                      'anchor': 'center', 'borderwidth': 4, 'width': 18},
+                                      'anchor': 'center', 'borderwidth': 4, 'width': 20},
                         'map': {'foreground': [('disabled', 'gray40'), ('pressed', 'white'), 
                                                ('active', 'white')],
                                 'background': [('disabled', 'black'), ('pressed', 'gray20'), 
