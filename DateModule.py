@@ -18,7 +18,8 @@ class DateFrame(ttk.Frame):
         self.master = master
         self.args = kw
         ttk.Frame.__init__(self, self.master)
-        inner_frame = ttk.Frame(self)
+        inner_frame = ttk.Frame(self, border=self.args['border'], 
+                                relief=self.args['relief'])
         self.jobject = jobject
         self.jentry = jentry
         
@@ -40,10 +41,10 @@ class DateFrame(ttk.Frame):
         self.num_entries = self.filter.getNumEntryVar()
         self.NUMLINKS = ttk.Label(inner_frame, anchor='center', width=10, 
                                   textvariable=self.num_entries)
-        
-        self.NUMLINKS.pack(side=tk.LEFT, expand=True)        
-        self.datebox.pack(side=tk.LEFT)
-        self.FILTER.pack(side=tk.LEFT)
+                
+        self.datebox.grid(row=0, column=0, padx=5)
+        self.NUMLINKS.grid(row=0, column=1)
+        self.FILTER.grid(row=0, column=2, padx=5, pady=self.args['pady'])
         
         inner_frame.pack()
         

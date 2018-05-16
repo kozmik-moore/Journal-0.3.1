@@ -44,42 +44,50 @@ class Main(tk.Tk):
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
         
-        self.top_frame = ttk.Frame(self)
-        self.date_frame = DateFrame(self.top_frame, self.entry, self.journal, 
+        """Frame 1"""
+        frame1 = ttk.Frame(self)
+        frame1_1 = ttk.Frame(frame1)
+        self.date_frame = DateFrame(frame1_1, self.entry, self.journal, 
                                     self, width=100, **self.args)
-        top_right_frame = ttk.Frame(self.top_frame)
-        self.body_frame = BodyFrame(self, self.entry, **self.args)
-        self.tags_frame = TagsFrame(self, self.journal, self.entry, **self.args)
-        self.lower_frame = ttk.Frame(self)
-        self.lower_left = ttk.Frame(self.lower_frame)
-        self.options_frame = ttk.Frame(self.lower_frame, relief=self.args['relief'], 
-                                       border=self.args['border'])
-        self.lower_right = ttk.Frame(self.lower_frame)
-        self.jgraph = JGraph(self.options_frame, self, self.journal, 
-                             self.entry, **self.args)
-        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, 
-                                               self.entry, **self.args)
-        
-        self.date_frame.grid(row=0, column=0, padx=5, sticky='w')
-        top_right_frame.grid(row=0, column=2)
-        self.top_frame.grid_columnconfigure(0, weight=1)
-        self.top_frame.grid_columnconfigure(1, weight=2)
-        self.top_frame.grid_columnconfigure(2, weight=0)
-        self.top_frame.pack(side='top', expand=True, fill='x', padx=5)
-        self.body_frame.pack(side='top', expand=True, fill='both', padx=5)
-        self.tags_frame.pack(side='top', expand=True, fill='x', padx=5)
-        
-        self.LAST_BACKUP_LABEL = ttk.Label(top_right_frame, text='Last Backup: ')
-        self.LAST_BACKUP = ttk.Label(top_right_frame, 
+        frame1_3 = ttk.Frame(frame1)
+        self.LAST_BACKUP_LABEL = ttk.Label(frame1_3, text='Last Backup: ')
+        self.LAST_BACKUP = ttk.Label(frame1_3, 
                                      textvariable=self.last_backup_var)
         self.LAST_BACKUP.pack(side='right', padx=3)
         self.LAST_BACKUP_LABEL.pack(side='right')
+        frame1_1.grid(row=0, column=0, sticky='w')
+        self.date_frame.grid(row=1, column=0, padx=self.args['padx'], sticky='w')
+        frame1_3.grid(row=0, column=2)
+        frame1.grid_columnconfigure(0, weight=1)
+        frame1.grid_columnconfigure(1, weight=2)
+        frame1.grid_columnconfigure(2, weight=0)
+        frame1.pack(side='top', expand=True, fill='x', padx=self.args['padx'])
         
-        self.lower_left.pack(side='left', expand=True, fill='x')
-        self.options_frame.pack(side='left')
-        self.lower_right.pack(side='left', expand=True, fill='x')
-        self.lower_frame.pack(side='top', expand=True, fill='x', padx=5)
+        """Frame 2"""
+        frame2 = ttk.Frame(self)
+        self.body_frame = BodyFrame(frame2, self.entry, **self.args)
+        self.tags_frame = TagsFrame(frame2, self.journal, self.entry, **self.args)
+        self.body_frame.pack(side='top', expand=True, fill='both', 
+                             padx=self.args['padx'], pady=self.args['pady'])
+        self.tags_frame.pack(side='top', expand=True, fill='x', 
+                             padx=self.args['padx'], pady=self.args['pady'])
+        frame2.pack(side='top', expand=True, fill='x', padx=self.args['padx'], 
+                    pady=self.args['pady'])
         
+        """Frame 3"""
+        frame3 = ttk.Frame(self)
+        frame3_1 = ttk.Frame(frame3)
+        self.options_frame = ttk.Frame(frame3, relief=self.args['relief'], 
+                                       border=self.args['border'])
+        frame3_3 = ttk.Frame(frame3)
+        self.jgraph = JGraph(self.options_frame, self, self.journal, 
+                             self.entry, **self.args)
+        self.attachmanager = AttachmentManager(self.options_frame, self, self.journal, 
+                                               self.entry, **self.args)    
+        frame3_1.pack(side='left', expand=True, fill='x')
+        self.options_frame.pack(side='left', pady=self.args['pady'])
+        frame3_3.pack(side='left', expand=True, fill='x')
+        frame3.pack(side='top', expand=True, fill='x', padx=self.args['padx'])
         self.SAVE = ttk.Button(self.options_frame, takefocus=0, text="Save", 
                                command=self.save)
         self.SAVE.grid(row=0, column=0)
@@ -95,30 +103,37 @@ class Main(tk.Tk):
         self.jgraph.grid(row=0, column=2, rowspan=2)
         self.attachmanager.grid(row=0, column=4, rowspan=2)
         
-        menubar = tk.Menu(self, bg=self.args['bgcolor1'], 
-                          fg=self.args['textcolor1'])
+        """Menu"""
+        menubutton = ttk.Menubutton(frame1_1, text='Options')
+        menubar = tk.Menu(menubutton, bg=self.args['bgcolor1'], 
+                               fg=self.args['textcolor1'], tearoff=0, 
+                               selectcolor=self.args['arrow'])
+        menubutton.config(menu=menubar)
         
         journal_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], 
                                fg=self.args['textcolor1'], tearoff=0)
         journal_menu.add_command(label='Save All Changes', 
                                  command=self.writeToDatabase)
-        pref_menu = tk.Menu(journal_menu, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
-                            tearoff=0)
+        pref_menu = tk.Menu(journal_menu, bg=self.args['bgcolor1'], 
+                            fg=self.args['textcolor1'], tearoff=0, 
+                            selectcolor=self.args['arrow'])
         journal_menu.add_cascade(label='Database Preferences', menu=pref_menu)
-        journal_menu.add_command(label='Quit', command=self.destroyApp)
         
-        entry_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
-                             tearoff=0)
+        entry_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], 
+                             fg=self.args['textcolor1'], tearoff=0, 
+                             selectcolor=self.args['arrow'])
         entry_menu.add_command(label='Save', command=self.save)
         entry_menu.add_command(label='Delete', command=self.delete)
         pref_menu.add_command(label="Change Save Directory", 
                               command=self.storage.changeSaveDirectory)
-        backup_menu = tk.Menu(pref_menu, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
-                              tearoff=0)
+        backup_menu = tk.Menu(pref_menu, bg=self.args['bgcolor1'], 
+                              fg=self.args['textcolor1'], tearoff=0, 
+                              selectcolor=self.args['arrow'])
         backup_menu.add_command(label='Change Backup Directory', 
                                 command=self.storage.changeBackupDirectory)
-        self.interval_menu = tk.Menu(backup_menu, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
-                                     tearoff=0)
+        self.interval_menu = tk.Menu(backup_menu, bg=self.args['bgcolor1'], 
+                                     fg=self.args['textcolor1'], tearoff=0, 
+                                     selectcolor=self.args['arrow'])
         self.interval_menu.add_command(label='Immediately', 
                                        command=self.storage.backupDatabase)
         self.interval_menu.add_radiobutton(label='Day', 
@@ -146,7 +161,7 @@ class Main(tk.Tk):
         
 
         help_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
-                            tearoff=0)
+                            tearoff=0, selectcolor=self.args['arrow'])
         help_menu.add_command(label='Help', command=self.createHelpWindow)
         help_menu.add_command(label='Keyboard Shortcuts', 
                               command=self.createShortcutsWindow)
@@ -155,8 +170,10 @@ class Main(tk.Tk):
         menubar.add_cascade(label='Journal', menu=journal_menu)
         menubar.add_cascade(label="Entry", menu=entry_menu)
         menubar.add_cascade(label="Help", menu=help_menu)
-        self.config(menu=menubar)
+        menubar.add_command(label='Quit', command=self.destroyApp)
+        self.config(menu=menubutton)
         menubar.config(bg=self.args['bgcolor1'], fg=self.args['textcolor1'])
+        menubutton.grid(row=0, column=0, sticky='w', pady=self.args['pady'])
         
         self.protocol("WM_DELETE_WINDOW", self.destroyApp)
         self.bindDateControl()
@@ -295,6 +312,8 @@ class JournalStyle(ttk.Style):
         self.text_color2 = None
         self.text_color3 = None
         self.frame_borderwidth = 4
+        self.padx = 5
+        self.pady = 3
         self.frame_relief = 'groove'
 
         
@@ -350,7 +369,10 @@ class JournalStyle(ttk.Style):
                         'configure':{'font': ('TkDefault', '9', 'bold', 'underline')}},
                 'Tags.Variable.UI.TButton': {'width': ''},
                 'TFrame': {
-                        'configure': {'background': 'black'}}
+                        'configure': {'background': 'black'}},
+                'TMenubutton': {
+                        'configure': {'background': 'black', 'foreground': 'white',
+                                      'indicator': 'red'}}
                 })
         self.theme_use('shadow')
         textcolors = {'1': 'white', '2': 'lime green', '3': 'DeepSkyBlue2'}
@@ -371,7 +393,8 @@ class JournalStyle(ttk.Style):
         return {'relief': self.frame_relief, 'border': self.frame_borderwidth, 
                 'bgcolor1': self.bgcolor1, 'bgcolor2': self.bgcolor2, 
                 'textcolor1': self.text_color1, 'textcolor2': self.text_color2, 
-                'textcolor3': self.text_color3}
+                'textcolor3': self.text_color3, 'padx': self.padx, 
+                'pady': self.pady, 'arrow': self.text_color1}
             
         
 app=Main()
