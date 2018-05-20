@@ -114,6 +114,16 @@ class Main(tk.Tk):
                                fg=self.args['textcolor1'], tearoff=0)
         journal_menu.add_command(label='Save All Changes', 
                                  command=self.writeToDatabase)
+        app_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], 
+                               fg=self.args['textcolor1'], tearoff=0)
+#        app_pref_menu = tk.Menu(app_menu, bg=self.args['bgcolor1'], 
+#                               fg=self.args['textcolor1'], tearoff=0)
+        theme_menu = tk.Menu(app_menu, bg=self.args['bgcolor1'], 
+                             fg=self.args['textcolor1'], tearoff=0)
+        theme_menu.add_command(label='Light Theme', command=style.setDayStyle)
+        theme_menu.add_command(label='Dark Theme', command=style.setNightStyle)
+#        app_menu.add_cascade(label='App Preferences', menu=app_pref_menu)
+        app_menu.add_cascade(label='Theme', menu=theme_menu)
         pref_menu = tk.Menu(journal_menu, bg=self.args['bgcolor1'], 
                             fg=self.args['textcolor1'], tearoff=0, 
                             selectcolor=self.args['arrow'])
@@ -167,6 +177,7 @@ class Main(tk.Tk):
                               command=self.createShortcutsWindow)
         help_menu.add_command(label="About", command=self.createAboutWindow)
         
+        menubar.add_cascade(label='App', menu=app_menu)
         menubar.add_cascade(label='Journal', menu=journal_menu)
         menubar.add_cascade(label="Entry", menu=entry_menu)
         menubar.add_cascade(label="Help", menu=help_menu)
@@ -304,8 +315,7 @@ class Main(tk.Tk):
 class JournalStyle(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
-        self.frame_list = []
-        self.tk_options = {}
+        self.tk_widgets = []
         self.bgcolor1 = None
         self.bgcolor2 = None
         self.text_color1 = None
@@ -315,16 +325,6 @@ class JournalStyle(ttk.Style):
         self.padx = 5
         self.pady = 3
         self.frame_relief = 'groove'
-
-        
-    def setDayStyle(self):
-        self.theme_use('default')
-        textcolors = {'1': 'black', '2': 'black', '3': 'blue'}
-        bgcolors = {'1': 'gray', '2': 'gray'}
-        self.setTkBGColors(bgcolors)
-        self.setTkTextColors(textcolors)
-        
-    def setNightStyle(self):
         self.theme_create('shadow', parent='default')
         self.theme_settings('shadow', {
                 'TButton': {
@@ -375,6 +375,66 @@ class JournalStyle(ttk.Style):
                         'configure': {'background': 'black', 'foreground': 'white',
                                       'indicator': 'red'}}
                 })
+    
+        self.theme_create('daylight', 'shadow')
+        self.theme_settings('daylight', {
+                'TButton': {
+                        'configure': {'padding': 3, 'foreground': 'black', 'relief': 'raised',
+                                      'font': 'TkDefaultFont', 'background': 'white', 
+                                      'anchor': 'center', 'borderwidth': 4, 'width': 20},
+                        'map': {'foreground': [('disabled', 'gray40'), ('pressed', 'black'), 
+                                               ('active', 'black')],
+                                'background': [('disabled', 'light grey'), ('pressed', 'white smoke'), 
+                                               ('active', 'azure')],
+                                'relief': [('pressed', 'groove'), ('!pressed', 'raised')]}},
+                'TLabel': {
+                        'configure': {'background': 'white', 'foreground': 'black'}},
+                'TCombobox': {
+                        'configure': {'fieldbackground': 'gray70', 'arrowcolor': 'gray50',
+                                       'background': 'gray'},
+                        'map': {'focusfill': [('readonly', 'focus', 'SystemHighlight')], 
+                                'foreground': [('disabled', 'SystemGrayText'), 
+                                               ('readonly', 'focus', 'black')], 
+                                'selectforeground': [('readonly', 'black')], 
+                                'selectbackground': [('readonly', 'gray70')]}},
+                'TCheckbutton': {
+                        'configure': {'foreground': 'black', 'background': 'white', 
+                                      'font': ('TkDefaultFont','10'), 'indicatorcolor': 'black'},
+                        'map': {'indicatorcolor': [('pressed', 'gray'), ('selected', 'blue')]}},
+                'TRadiobutton': {
+                        'configure': {'foreground': 'black', 'background': 'white', 
+                                      'indicatorcolor': 'black', 'padding': 3},
+                        'map': {'indicatorcolor': [('pressed', 'gray'), ('selected', 'blue')]}},
+                'Vertical.TScrollbar': {
+                        'configure': {'background': 'white', 'troughcolor': 'gray70', 'arrowcolor': 'gray50'}},
+                'Horizontal.TScrollbar': {
+                        'configure': {'background': 'white', 'troughcolor': 'gray70', 'arrowcolor': 'gray50'}},
+                'UI.TButton': {
+                        'configure': {}},
+                'Current.UI.TButton': {
+                        'configure': {'background': 'white', 'foreground': 'blue'},
+                        'map': {'foreground': [('active', 'blue')]}},
+                'Bold.UI.TButton': {
+                        'configure': {'font': ('TkDefault', '9', 'bold')}},
+                'Tags.Bold.UI.TButton': {
+                        'configure':{'font': ('TkDefault', '9', 'bold', 'underline')}},
+                'Tags.Variable.UI.TButton': {
+                        'configure': ''},
+                'TFrame': {
+                        'configure': {'background': 'white'}},
+                'TMenubutton': {
+                        'configure': {'background': 'white', 'foreground': 'black',
+                                      'indicator': 'red'}}
+                })
+        
+    def setDayStyle(self):
+        self.theme_use('daylight')
+        textcolors = {'1': 'black', '2': 'black', '3': 'blue'}
+        bgcolors = {'1': 'gray70', '2': 'gray90'}
+        self.setTkBGColors(bgcolors)
+        self.setTkTextColors(textcolors)
+        
+    def setNightStyle(self):
         self.theme_use('shadow')
         textcolors = {'1': 'white', '2': 'lime green', '3': 'DeepSkyBlue2'}
         bgcolors = {'1': 'black', '2': 'gray8'}
@@ -396,6 +456,15 @@ class JournalStyle(ttk.Style):
                 'textcolor1': self.text_color1, 'textcolor2': self.text_color2, 
                 'textcolor3': self.text_color3, 'padx': self.padx, 
                 'pady': self.pady, 'arrow': self.text_color1}
+        
+    def toggleTheme(self):
+        if self.theme_use() is 'daylight':
+            self.setNightStyle()
+        else:
+            self.setDayStyle()
+            
+    def addWidget(self, wid):
+        self.tk_widgets.append(wid)
             
         
 app=Main()
