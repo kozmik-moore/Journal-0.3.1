@@ -19,11 +19,12 @@ BUTTON_LENGTH = 180
 BUTTON_HEIGHT = 60
        
 class JGraph(tk.Frame):
-    def __init__(self, master, controller, journal, entry, path, **kw):
+    def __init__(self, master, controller, journal, entry, **kw):
         self.master = master
         self.controller = controller
         self.journal=journal
         self.entry=entry
+        self.args = kw
         self.number_vertices = 0
         self.adjacency = {}
         self.parent = {}
@@ -45,14 +46,18 @@ class JGraph(tk.Frame):
         
         self.graph_dialog = None
         self.preview_dialog = None
-        self.iconpath = join(path, 'Resources\\web.ico')
+        self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
         
         self.style = ttk.Style()        
         self.style.configure('Current.TButton', width='', background='black', border=10)
-        tk.Frame.__init__(self, self.master, **kw)
-        self.NEWLINK = ttk.Button(master=self, style='UI.TButton', takefocus=0, text="Create Linked Entry", command=self.controller.newLink)
-        self.DISPLAY = ttk.Button(master=self, style='UI.TButton', takefocus=0, text="Display Linked Entries", 
-                              command=self.creatGraphDialog, state='disabled')
+        ttk.Frame.__init__(self, self.master)
+        self.NEWLINK = ttk.Button(master=self, style='UI.TButton', takefocus=0, 
+                                  text="Create Link", 
+                                  command=self.controller.newLink)
+        self.DISPLAY = ttk.Button(master=self, style='UI.TButton', takefocus=0, 
+                                  text="Display Links", 
+                                  command=self.creatGraphDialog, 
+                                  state='disabled')
         self.NEWLINK.pack(fill='x')
         self.DISPLAY.pack(fill='x')
         
@@ -147,11 +152,11 @@ class JGraph(tk.Frame):
         self.graph_dialog.title('Graph')
         self.graph_dialog.iconbitmap(self.iconpath)
         self.graph_dialog.grab_set()
-        frame = tk.Frame(self.graph_dialog)
+        frame = ttk.Frame(self.graph_dialog)
         xbar = ttk.Scrollbar(frame, orient='horizontal')
         ybar = ttk.Scrollbar(frame, orient='vertical')
         canvas = tk.Canvas(frame, yscrollcommand=ybar.set, xscrollcommand=xbar.set, 
-                           bg='light slate gray')
+                           bg=self.args['bgcolor2'])
         xbar.pack(side='bottom', fill='x')
         ybar.pack(side='right', fill='y')
         frame.pack(expand=True, fill='both')
@@ -163,7 +168,8 @@ class JGraph(tk.Frame):
                 for child in children:
                     u = self.coordinates[child][0]*BUTTON_LENGTH
                     v = self.coordinates[child][1]*BUTTON_HEIGHT
-                    canvas.create_line(x,y,u,v)
+                    canvas.create_line(x,y,u,v, arrow='last', 
+                                       fill=self.args['textcolor1'])
         for date in sorted(self.coordinates):
             x=self.coordinates[date][0]*BUTTON_LENGTH
             y=self.coordinates[date][1]*BUTTON_HEIGHT
@@ -222,13 +228,13 @@ class JGraph(tk.Frame):
     def previewEntry(self, date):
         entry = self.journal.getEntry(date)
         
-        self.preview_dialog = tk.Toplevel(bg='slate gray')
+        self.preview_dialog = tk.Toplevel(bg=self.args['bgcolor1'])
         self.preview_dialog.title('Preview')
         self.preview_dialog.iconbitmap(self.iconpath)
         self.preview_dialog.grab_set()
-        outer_frame = tk.Frame(self.preview_dialog, bg='slate gray')
-        body_frame = tk.Frame(outer_frame, bg='slate gray')
-        tags_frame = tk.Frame(outer_frame, height=1, bg='slate gray')
+        outer_frame = tk.Frame(self.preview_dialog, bg=self.args['bgcolor1'])
+        body_frame = tk.Frame(outer_frame, bg=self.args['bgcolor2'])
+        tags_frame = tk.Frame(outer_frame, height=1, bg=self.args['bgcolor1'])
         
         date_label = ttk.Label(outer_frame, text=DateTools.getDateGUIFormat(date))
         

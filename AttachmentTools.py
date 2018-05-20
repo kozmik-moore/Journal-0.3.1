@@ -24,11 +24,12 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 class AttachmentManager(tk.Frame):
-    def __init__(self, master, controller, path, jobject, jentry, **kw):
+    def __init__(self, master, controller, jobject, jentry, **kw):
         self.master = master
         self.controller = controller
         self.journal = jobject
         self.entry = jentry
+        self.args = kw
         self.all_attachments = []
         self.dialog = None
         self.frame = None
@@ -36,8 +37,9 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = None
         self.delete_icon = None
         
-        self.iconpath = join(path, 'Resources\\Trash_Can-512.png')
-        self.parentpath = join(path, 'Attachments\\')        
+        self.trashcan = join(self.args['homepath'], 'Resources\\Trash_Can-512.png')
+        self.app_icon = join(self.args['homepath'], 'Resources\\web.ico')
+        self.parentpath = join(self.args['homepath'], 'Attachments\\')        
         try:
             mkdir(self.parentpath)
         except FileExistsError:
@@ -50,7 +52,7 @@ class AttachmentManager(tk.Frame):
         if exists(abspath(self.currentpath)):
             self.delete()
         
-        tk.Frame.__init__(self, self.master, **kw)
+        ttk.Frame.__init__(self, self.master)
         self.NEW = ttk.Button(self, takefocus=0, style='UI.TButton', 
                               text='Add Attachment', 
                               command=self.askForAttachment)
@@ -167,15 +169,15 @@ class AttachmentManager(tk.Frame):
         self.buttonlist = []
         
         if self.all_attachments:
-            self.dialog = tk.Toplevel(bg='slate gray')
+            self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
             self.dialog.title('Attachments')
+            self.dialog.iconbitmap(self.app_icon)
             self.dialog.maxsize(width=self.dialog.winfo_screenwidth(), 
                                 height=self.dialog.winfo_screenheight())
             self.dialog.minsize(width=250, height=70)
             
-            self.frame = tk.Frame(self.dialog, bg='slate gray')
-#            topframe = tk.Frame(self.frame, bg='slate gray')
-            bottomframe = tk.Frame(self.dialog)
+            self.frame = ttk.Frame(self.dialog)
+            bottomframe = ttk.Frame(self.dialog)
             
             for filepath in self.all_attachments:
                 path = abspath(filepath)
@@ -209,12 +211,9 @@ class AttachmentManager(tk.Frame):
         self.dialog.title('Delete')
         
         for item in self.buttonlist:
-            checkbutton = tk.Checkbutton(self.frame, 
+            checkbutton = ttk.Checkbutton(self.frame, 
                                          text=item[0].cget('text'), 
-                                         var=item[1], bg='slate gray', 
-                                         fg='black', 
-                                         activebackground='light slate gray',
-                                         activeforeground='black')
+                                         var=item[1])
             checkbutton.pack(side=tk.TOP, expand=True, fill=tk.X, pady=2)
             
         w = self.DELETE.winfo_width()
@@ -222,7 +221,7 @@ class AttachmentManager(tk.Frame):
         if not self.delete_icon:
 #            iconpath = self.parentpath.rsplit('\\Attachments',1)[0] + \
 #            '\\Resources\\Trash_Can-512.png'
-            self.delete_icon = PI.open(self.iconpath)
+            self.delete_icon = PI.open(self.trashcan)
             self.delete_icon.thumbnail((h-2,h-2))
             self.delete_icon = ImageTk.PhotoImage(self.delete_icon)
         self.DELETE.config(command=self.refreshDialog, text='', 

@@ -11,16 +11,19 @@ from TagTools import TagSelectionManager
 import DateTools
 from math import ceil
 from copy import copy
+from os.path import join
 
-class DateFrame(tk.Frame):
+class DateFrame(ttk.Frame):
     def __init__(self, master, jentry, jobject, controller, **kw):
         self.master = master
-        tk.Frame.__init__(self, self.master, **kw)
-        inner_frame = tk.Frame(self, bg='slate gray')
+        self.args = kw
+        ttk.Frame.__init__(self, self.master)
+        inner_frame = ttk.Frame(self, border=self.args['border'], 
+                                relief=self.args['relief'])
         self.jobject = jobject
         self.jentry = jentry
         
-        self.filter = DateFilter(self.jobject)
+        self.filter = DateFilter(self.jobject, **kw)
         
         self.user_date = ''
         self.program_date = None
@@ -38,10 +41,10 @@ class DateFrame(tk.Frame):
         self.num_entries = self.filter.getNumEntryVar()
         self.NUMLINKS = ttk.Label(inner_frame, anchor='center', width=10, 
                                   textvariable=self.num_entries)
-        
-        self.NUMLINKS.pack(side=tk.LEFT, expand=True)        
-        self.datebox.pack(side=tk.LEFT)
-        self.FILTER.pack(side=tk.LEFT)
+                
+        self.datebox.grid(row=0, column=0, padx=5)
+        self.NUMLINKS.grid(row=0, column=1)
+        self.FILTER.grid(row=0, column=2, padx=5, pady=self.args['pady'])
         
         inner_frame.pack()
         
@@ -104,28 +107,32 @@ class DateFrame(tk.Frame):
         return self.program_date
     
 class DateFilter(TagSelectionManager):
-    def __init__(self, jobject):
+    def __init__(self, jobject, **kw):
         TagSelectionManager.__init__(self, jobject, True, 'DF.')
+        self.args = kw
         self.dateslist = list(self.journal.getAllDates())
         self.dialog = None
         self.filter_type = tk.StringVar(name='SearchType', value='OR')
         self.islinked = tk.BooleanVar(name='IsLinkedFilter', value=False)
         self.num_entries = tk.IntVar(name='NumberOfEntries', value=len(self.dateslist))
+        self.iconpath = join(self.args['homepath'], 'Resources\\web.ico')
         
     def createFilterDialog(self):
-        self.dialog = tk.Toplevel(bg='slate gray')
+        self.dialog = tk.Toplevel(bg=self.args['bgcolor1'])
         self.dialog.title("Filters")
-        top = tk.Frame(self.dialog, bg='slate gray')
-        middle = tk.Frame(self.dialog, bg='slate gray')
-        bottom = tk.Frame(self.dialog, bg='slate gray')
+        self.dialog.iconbitmap(self.iconpath)
+        top = ttk.Frame(self.dialog)
+        middle = ttk.Frame(self.dialog)
+        bottom = ttk.Frame(self.dialog)
         
-        canvas = tk.Canvas(self.dialog, highlightthickness=0, bg='slate gray')
+        canvas = tk.Canvas(self.dialog, highlightthickness=0, 
+                           bg=self.args['bgcolor1'])
         canvas.pack()
         tagslist = self.getVarsDict()
         if tagslist:
             for tag in tagslist:
-                tagslist[tag][1] = tk.Checkbutton(master=canvas, text=tag, 
-                        variable=tagslist[tag][0], bg='slate gray')
+                tagslist[tag][1] = ttk.Checkbutton(master=canvas, text=tag, 
+                        variable=tagslist[tag][0])
             tmp = sorted(tagslist.keys())
             row = 10
             col = ceil(len(tagslist) / row)
@@ -137,21 +144,18 @@ class DateFilter(TagSelectionManager):
             message = tk.Message(canvas, text='There is nothing to display.')
             message.grid()
         
-        ORPTYPE = tk.Radiobutton(middle, text="OR(P)", value="OR(P)", 
-                                 variable=self.filter_type, bg='slate gray')
+        ORPTYPE = ttk.Radiobutton(middle, text="OR(P)", value="OR(P)", 
+                                 variable=self.filter_type)
         ORPTYPE.grid(row=1, column=1)
-        ORTYPE = tk.Radiobutton(middle, text="OR", value="OR", variable=self.filter_type, 
-                                bg='slate gray')
+        ORTYPE = ttk.Radiobutton(middle, text="OR", value="OR", variable=self.filter_type)
         ORTYPE.grid(row=1, column=0)
-        ANDTYPE = tk.Radiobutton(middle, text="AND", value="AND", variable=self.filter_type, 
-                                 bg='slate gray')
+        ANDTYPE = ttk.Radiobutton(middle, text="AND", value="AND", variable=self.filter_type)
         ANDTYPE.grid(row=1, column=2)
         
         ALL = ttk.Button(bottom, text="All", command=self.selectAllBoxes)
         NONE = ttk.Button(bottom, text="None", command=self.deselectAllBoxes)
         INVERT = ttk.Button(bottom, text="Invert", command=self.invertAllBoxes)
-        ISLINKED = tk.Checkbutton(middle, text='Is Linked', variable=self.islinked, 
-                                  bg='slate gray')
+        ISLINKED = ttk.Checkbutton(middle, text='Is Linked', variable=self.islinked)
         ALL.grid(row=1, column=0)
         NONE.grid(row=1, column=1)
         INVERT.grid(row=1, column=2)
