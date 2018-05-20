@@ -120,7 +120,7 @@ class Main(tk.Tk):
 #                               fg=self.args['textcolor1'], tearoff=0)
         theme_menu = tk.Menu(app_menu, bg=self.args['bgcolor1'], 
                              fg=self.args['textcolor1'], tearoff=0)
-        theme_menu.add_command(label='Light Theme', command=style.setDayStyle)
+        theme_menu.add_command(label='Light Theme (WIP)', command=style.setDayStyle)
         theme_menu.add_command(label='Dark Theme', command=style.setNightStyle)
 #        app_menu.add_cascade(label='App Preferences', menu=app_pref_menu)
         app_menu.add_cascade(label='Theme', menu=theme_menu)
