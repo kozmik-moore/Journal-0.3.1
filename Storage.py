@@ -336,7 +336,8 @@ class Storage:
             self.journal.add(entry)
             for item in attachments:
                 try:
-                    move(abspath(join(path, item)), att_path)
+                    item_path = abspath(join(path, item))
+                    move(item_path, att_path)
                 except FileNotFoundError:
                     None
             
