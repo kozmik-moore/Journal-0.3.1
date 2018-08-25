@@ -19,6 +19,7 @@ from os import rmdir
 from os import listdir
 from os import makedirs
 from shutil import move
+from shutil import copy
 from shutil import make_archive
 import pickle
 from tkinter import BooleanVar
@@ -337,7 +338,8 @@ class Storage:
             for item in attachments:
                 try:
                     item_path = abspath(join(path, item))
-                    move(item_path, att_path)
+                    copy(item_path, att_path)
+                    remove(item_path)
                 except FileNotFoundError:
                     None
             
