@@ -28,13 +28,14 @@ from tkinter import StringVar
 import DateTools
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesnocancel
 import JObject
 import sys
 
 class Storage:
     def __init__(self, master=None):
         self.HOME = self.SAVE = self.BACKUP = self.IMPORTS = self.LAST_BACKUP = None
-        self.BACKUP_INTERVAL = 168
+        self.BACKUP_INTERVAL = 168      #24, 72, 168, -1
         self.AUTOSAVE = False
         self.FIRST_TIME = True
         self.getWorkingDir()
@@ -65,6 +66,7 @@ class Storage:
             self.SAVE = ini_file['SAVE LOCATION']
             self.BACKUP = ini_file['BACKUP LOCATION']
             self.IMPORTS = ini_file['IMPORTS LOCATION']
+            self.BACKUP_INTERVAL = ini_file['BACKUP INTERVAL']
             self.auto_save.set(ini_file['AUTOSAVE'])
             self.backup_interval.set(ini_file['BACKUP INTERVAL'])
             if not ini_file['LAST BACKUP']:
@@ -187,33 +189,43 @@ class Storage:
         passed to the journal object) and updates associated variables"""
         
         backup_loc = self.BACKUP
+        test = exists(backup_loc)
         backup_db = None
         fout = None
         check = None
-        if backup_loc:
+        if test:
             backup_db = join(backup_loc, 'journal_db')
-            makedirs(backup_loc, exist_ok=True)
             fout = open(backup_db, "wb")
         else:
-            self.changeBackupDirectory()
-            fout = open(join(self.BACKUP, 'journal_db'), "wb")
-        pickle.dump(self.journal, fout)
-        fout.close()
-        att_loc = join(self.HOME, 'Attachments')
-        try:
-            check = listdir(att_loc)
-        except FileNotFoundError:
-            None
-        if check:
+            message = 'The backup folder could not be located at ' + backup_loc +\
+            '.\n\n Would you like to reassign the directory?' +\
+            '\n\n (If you choose not to reassign, you can do so later via the menu.)'
+            new = askyesno('Directory Not Found!', message)
+            self.BACKUP = None
+            if new:
+                self.changeBackupDirectory()
+                fout = open(join(self.BACKUP, 'journal_db'), "wb")
+            else:
+                self.LAST_BACKUP = None
+#                self.BACKUP_INTERVAL = -1
+        if fout:
+            pickle.dump(self.journal, fout)
+            fout.close()
+            att_loc = join(self.HOME, 'Attachments')
             try:
-                remove(join(backup_loc, 'Attachments.zip'))
+                check = listdir(att_loc)
             except FileNotFoundError:
                 None
-            make_archive('Attachments', 'zip', backup_loc, att_loc)
-            move('Attachments.zip', backup_loc)
-        date = DateTools.getCurrentDate()
-        self.LAST_BACKUP = date
-        self.last_backup.set(DateTools.getDateGUIFormat(date))
+            if check:
+                try:
+                    remove(join(backup_loc, 'Attachments.zip'))
+                except FileNotFoundError:
+                    None
+                make_archive('Attachments', 'zip', backup_loc, att_loc)
+                move('Attachments.zip', backup_loc)
+            date = DateTools.getCurrentDate()
+            self.LAST_BACKUP = date
+            self.last_backup.set(DateTools.getDateGUIFormat(date))
             
     def getSaveDirectory(self):
         return self.SAVE
@@ -244,14 +256,14 @@ class Storage:
         
     def runBackup(self):
         if self.BACKUP_INTERVAL != -1:
-            if not self.BACKUP:
-                self.changeBackupDirectory()
+            if self.FIRST_TIME:
+                self.backupDatabase()
             today = DateTools.getCurrentDate()
             if self.LAST_BACKUP:
                 if (today-self.LAST_BACKUP).total_seconds() > self.BACKUP_INTERVAL*3600:
                     self.backupDatabase()
-            else:
-                self.backupDatabase()
+#            else:
+#                self.backupDatabase()
         
     def saveJournal(self, journal):
         """Saves the journal of the storage object (not the journal of the 
