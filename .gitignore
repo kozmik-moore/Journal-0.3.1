@@ -231,7 +231,7 @@ build.txt
 ##################
 
 #Journal
-web.ico
+#web.ico
 icon.ico
 Attachments/
 journal_db
@@ -241,5 +241,5 @@ Journal.ini
 Extras.py
 JournalObject.py
 LabScripts.py
-Trash_Can-512.png
+#Trash_Can-512.png
 .gitattributes.txt
