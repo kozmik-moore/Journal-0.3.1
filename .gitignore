@@ -226,6 +226,10 @@ build.txt
 .spyderproject
 .spyproject
 
+#Pycharm settings
+*.xml
+*.iml
+
 ##################
 ##Project Specific
 ##################

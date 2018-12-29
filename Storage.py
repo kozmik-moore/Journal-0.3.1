@@ -32,33 +32,34 @@ from tkinter.messagebox import askyesnocancel
 import JObject
 import sys
 
+
 class Storage:
     def __init__(self, master=None):
         self.HOME = self.SAVE = self.BACKUP = self.IMPORTS = self.LAST_BACKUP = None
-        self.BACKUP_INTERVAL = 168      #24, 72, 168, -1
+        self.BACKUP_INTERVAL = 168  # 24, 72, 168, -1
         self.AUTOSAVE = False
         self.FIRST_TIME = True
         self.getWorkingDir()
-        
+
         self.journal = None
         self.master = master
-        self.auto_save = BooleanVar(master=self.master, name='Autosave', 
+        self.auto_save = BooleanVar(master=self.master, name='Autosave',
                                     value=self.AUTOSAVE)
-        self.backup_interval = IntVar(master=self.master, 
-                                      name='Backup Interval', 
+        self.backup_interval = IntVar(master=self.master,
+                                      name='Backup Interval',
                                       value=self.BACKUP_INTERVAL)
-        self.last_backup = StringVar(master=self.master, name='Last Backup', 
+        self.last_backup = StringVar(master=self.master, name='Last Backup',
                                      value=self.LAST_BACKUP)
-        self.first_time = BooleanVar(self.master, name='First Time Use Flag', 
+        self.first_time = BooleanVar(self.master, name='First Time Use Flag',
                                      value=self.FIRST_TIME)
-        
-#        self.createImportsDirectory()
+
+        #        self.createImportsDirectory()
         self.LoadIniFile()
         self.createResourceFolder()
         self.openJournalFile()
         self.checkImports()
         self.runBackup()
-         
+
     def LoadIniFile(self):
         try:
             fin = open(join(self.HOME, "Journal.ini"), "rb")
@@ -84,18 +85,18 @@ class Storage:
             self.changeSaveDirectory()
             fin = open(join(self.HOME, "Journal.ini"), "wb")
         fin.close()
-            
+
     def saveIniFile(self):
-        ini_file = {'SAVE LOCATION': self.SAVE, 'BACKUP LOCATION': self.BACKUP, 
-                    'IMPORTS LOCATION': self.IMPORTS, 
-                    'LAST BACKUP': self.LAST_BACKUP, 
-                    'BACKUP INTERVAL': self.BACKUP_INTERVAL, 
-                    'AUTOSAVE': self.AUTOSAVE, 
+        ini_file = {'SAVE LOCATION': self.SAVE, 'BACKUP LOCATION': self.BACKUP,
+                    'IMPORTS LOCATION': self.IMPORTS,
+                    'LAST BACKUP': self.LAST_BACKUP,
+                    'BACKUP INTERVAL': self.BACKUP_INTERVAL,
+                    'AUTOSAVE': self.AUTOSAVE,
                     'FIRST TIME': self.FIRST_TIME}
         fout = open(join(self.HOME, 'Journal.ini'), 'wb')
         pickle.dump(ini_file, fout)
         fout.close()
-        
+
     def openJournalFile(self):
         try:
             fin = open(join(self.SAVE, "journal_db"), "rb")
@@ -104,7 +105,7 @@ class Storage:
             fin = open(join(self.SAVE, "journal_db"), "wb")
             self.journal = JObject.JObject()
         fin.close()
-        
+
     def changeSaveDirectory(self):
         self.dir_opt = options = {}
         old = None
@@ -121,14 +122,14 @@ class Storage:
             new = join(self.SAVE, 'journal_db')
             if not exists(new):
                 if old:
-                    move_db = askyesno('Move?', 'Do you want to move the old ' +\
-                                      'database to the new location?')
+                    move_db = askyesno('Move?', 'Do you want to move the old ' + \
+                                       'database to the new location?')
                     if move_db:
                         move(join(old, 'journal_db'), self.SAVE)
                     else:
                         self.saveJournal(self.journal)
             self.saveIniFile()
-        
+
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
         old = None
@@ -141,14 +142,14 @@ class Storage:
         options['title'] = 'Choose a Location for the Backup Folder'
         location = askdirectory(**self.backup_opt)
         if location != '':
-            self.BACKUP = join(location , "Backup")
+            self.BACKUP = join(location, "Backup")
             if not exists(self.BACKUP):
                 if old:
                     move(old, self.BACKUP)
                 else:
                     mkdir(self.BACKUP)
             self.saveIniFile()
-                                
+
     def changeImportsDirectory(self):
         self.backup_opt = options = {}
         location = self.IMPORTS
@@ -169,27 +170,30 @@ class Storage:
                 else:
                     mkdir(self.IMPORTS)
             self.saveIniFile()
-            
+
     def changeBackupSchedule(self):
-        self.BACKUP_INTERVAL = self.backup_interval.get()            
-        
+        self.BACKUP_INTERVAL = self.backup_interval.get()
+
     def toggleAutoSave(self):
         if self.auto_save.get() == True:
             self.auto_save.set(False)
         else:
             self.auto_save.set(True)
         self.AUTOSAVE = self.auto_save.get()
-        
+
     def changeFirstTimeFlag(self):
         self.first_time.set(False)
         self.FIRST_TIME = False
-            
+
     def backupDatabase(self):
         """Backs up the database held by the storage object(not the one
         passed to the journal object) and updates associated variables"""
-        
-        backup_loc = self.BACKUP
-        test = exists(backup_loc)
+
+        test = None
+        backup_loc = None
+        if self.BACKUP:
+            backup_loc = self.BACKUP
+            test = exists(backup_loc)
         backup_db = None
         fout = None
         check = None
@@ -197,9 +201,13 @@ class Storage:
             backup_db = join(backup_loc, 'journal_db')
             fout = open(backup_db, "wb")
         else:
-            message = 'The backup folder could not be located at ' + backup_loc +\
-            '.\n\n Would you like to reassign the directory?' +\
-            '\n\n (If you choose not to reassign, you can do so later via the menu.)'
+            if backup_loc:
+                message = 'The backup folder could not be located at ' + backup_loc + \
+                          '.\n\n Would you like to reassign the directory?' + \
+                          '\n\n (If you choose not to reassign, you can do so later via the menu.)'
+            else:
+                message = 'No backup location set. Would you like to assign a location? \n\n (If you choose not to,' \
+                          ' you can do so later via the menu.) '
             new = askyesno('Directory Not Found!', message)
             self.BACKUP = None
             if new:
@@ -207,7 +215,7 @@ class Storage:
                 fout = open(join(self.BACKUP, 'journal_db'), "wb")
             else:
                 self.LAST_BACKUP = None
-#                self.BACKUP_INTERVAL = -1
+        #                self.BACKUP_INTERVAL = -1
         if fout:
             pickle.dump(self.journal, fout)
             fout.close()
@@ -226,67 +234,68 @@ class Storage:
             date = DateTools.getCurrentDate()
             self.LAST_BACKUP = date
             self.last_backup.set(DateTools.getDateGUIFormat(date))
-            
+
     def getSaveDirectory(self):
         return self.SAVE
-        
+
     def getBackupDirectory(self):
         return self.BACKUP
-        
+
     def getAutosaveVar(self):
         return self.auto_save
-        
+
     def getBackupIntervalVar(self):
         return self.backup_interval
-        
+
     def getLastBackupVar(self):
         return self.last_backup
-    
+
     def getFirstTimeVar(self):
         return self.first_time
-        
+
     def getJournal(self):
         return self.journal.__deepcopy__()
-        
+
     def journalIsSaved(self, journal):
         if self.journal.equals(journal):
             return True
         else:
             return False
-        
+
     def runBackup(self):
         if self.BACKUP_INTERVAL != -1:
             if self.FIRST_TIME:
                 self.backupDatabase()
             today = DateTools.getCurrentDate()
             if self.LAST_BACKUP:
-                if (today-self.LAST_BACKUP).total_seconds() > self.BACKUP_INTERVAL*3600:
+                if (today - self.LAST_BACKUP).total_seconds() > self.BACKUP_INTERVAL * 3600:
                     self.backupDatabase()
-#            else:
-#                self.backupDatabase()
-        
+
+    #            else:
+    #                self.backupDatabase()
+
     def saveJournal(self, journal):
         """Saves the journal of the storage object (not the journal of the 
         journal object) [Is this the same journal?]"""
-        
+
         fout = open(join(self.SAVE, "journal_db"), "wb")
         pickle.dump(journal, fout)
         fout.close()
-        
+
     def closeStreams(self):
         None
-        
+
     def createResourceFolder(self):
         tmp = join(self.HOME, 'Resources')
         if not exists(abspath(tmp)):
             mkdir(tmp)
-            
-#    def createImportsDirectory(self):
-##        tmp = join(self.HOME, 'Imports')
-##        if not exists(abspath(tmp)):
-##            mkdir(tmp)
-#        None
-            
+
+    #    def createImportsDirectory(self):
+    ##        tmp = join(self.HOME, 'Imports')
+    ##        if not exists(abspath(tmp)):
+    ##            mkdir(tmp)
+    #        None
+
     def getWorkingDir(self):
         frozen = False
         if getattr(sys, 'frozen', False):
@@ -294,12 +303,12 @@ class Storage:
             self.HOME = sys._MEIPASS
         else:
             self.HOME = dirname(abspath('Storage.py'))
-            
+
     def getPath(self):
         return self.HOME
-    
+
     def importEntry(self, jeif_path):
-        if exists(jeif_path):    
+        if exists(jeif_path):
             path = self.IMPORTS
             att_path = None
             fin = open(jeif_path)
@@ -312,10 +321,10 @@ class Storage:
                 body = '--Body section of import file was empty--'
             if not date:
                 date = DateTools.getCurrentDate()
-                body = '--This entry was created by an import file with ' +\
-                             'no associated date. The import file can be ' +\
-                             'viewed in the attachments folder associated ' +\
-                             'with this entry--\n\n' + body
+                body = '--This entry was created by an import file with ' + \
+                       'no associated date. The import file can be ' + \
+                       'viewed in the attachments folder associated ' + \
+                       'with this entry--\n\n' + body
             tags = contents.split('<Tags>')[1].strip()
             if not tags:
                 tags = ['Untagged']
@@ -337,14 +346,14 @@ class Storage:
                     if tmp[i]:
                         attachments.append(tmp[i].strip())
                     attachments.pop(0)
-            att_path = join(join(self.HOME, 'Attachments'), 
+            att_path = join(join(self.HOME, 'Attachments'),
                             DateTools.getDateFileStorageFormat(date))
             if not exists(att_path):
                 mkdir(att_path)
                 move(jeif_path, att_path)
             else:
                 remove(jeif_path)
-            entry = JObject.JEntry(date=date, body=body, tags=tags, 
+            entry = JObject.JEntry(date=date, body=body, tags=tags,
                                    attachments=attachments)
             self.journal.add(entry)
             for item in attachments:
@@ -354,7 +363,7 @@ class Storage:
                     remove(item_path)
                 except FileNotFoundError:
                     None
-            
+
     def checkImports(self):
         path = self.IMPORTS
         if not path:
@@ -363,8 +372,8 @@ class Storage:
         try:
             check = listdir(path)
         except FileNotFoundError:
-            message = 'The imports folder could not be located at ' + path +\
-            '.\n\n Would you like to reassign the directory?'
+            message = 'The imports folder could not be located at ' + path + \
+                      '.\n\n Would you like to reassign the directory?'
             new = askyesno('Directory Not Found!', message)
             if new:
                 self.changeImportsDirectory()
@@ -373,4 +382,4 @@ class Storage:
         if check:
             for file in check:
                 if file.endswith('.jeif'):
-                    self.importEntry(abspath(join(path,file)))
+                    self.importEntry(abspath(join(path, file)))
