@@ -5,13 +5,13 @@ block_cipher = None
 options =[('v', None, 'OPTIONS')]
 
 added_files =[
-			('C:\\Users\\Kozmik\\Documents\\Programming Projects\\Journal 0.3.1\\Resources\\Messages', 'Resources'),
-			('C:\\Users\\Kozmik\\Documents\\Programming Projects\\Journal 0.3.1\\Resources\\Template.jeif', 'Resources'),
-			('C:\\Users\\Kozmik\\Documents\\Programming Projects\\Journal 0.3.1\\Resources\\Trash_Can-512.png', 'Resources'),
-			('C:\\Users\\Kozmik\\Documents\\Programming Projects\\Journal 0.3.1\\Resources\\web.ico', 'Resources')
+			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Messages', 'Resources'),
+			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Template.jeif', 'Resources'),
+			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Trash_Can-512.png', 'Resources'),
+			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\web.ico', 'Resources')
 			]
 a = Analysis(['Journal.py'],
-             pathex=['C:\\Users\\Kozmik\\Documents\\Programming Projects\\Journal 0.3.1'],
+             pathex=['C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl'],
              binaries=[],
              datas=added_files,
              hiddenimports=[],
@@ -31,7 +31,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=True,
-		  icon='web.ico')
+		  icon='C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\web.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
