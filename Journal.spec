@@ -1,17 +1,21 @@
 # -*- mode: python -*-
 
+from os import getcwd
+
+root = getcwd()
+resources = root + "\\Resources\\"
+
 block_cipher = None
 
 options =[('v', None, 'OPTIONS')]
 
 added_files =[
-			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Messages', 'Resources'),
-			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Template.jeif', 'Resources'),
-			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\Trash_Can-512.png', 'Resources'),
-			('C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\web.ico', 'Resources')
+			(resources + 'Messages', 'Resources'),
+			(resources + 'Template.jeif', 'Resources'),
+			(resources + 'Trash_Can-512.png', 'Resources'),
+			(resources + 'web.ico', 'Resources')
 			]
 a = Analysis(['Journal.py'],
-             pathex=['C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl'],
              binaries=[],
              datas=added_files,
              hiddenimports=[],
@@ -31,7 +35,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=True,
-		  icon='C:\\Users\\kozmo\\Documents\\Personal\\Programming\Python\\kunnekted-jurnl\\Resources\\web.ico')
+		  icon=resources + 'web.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
