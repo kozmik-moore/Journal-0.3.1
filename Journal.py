@@ -13,23 +13,23 @@ from TagsModule import TagsFrame
 from Storage import Storage
 from DateModule import DateFrame
 from os.path import join
-#import DateTools
-#import textwrap
 from GraphTools import JGraph
 from AttachmentTools import AttachmentManager
-                
+
+
 class Main(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         style = JournalStyle()
         style.setNightStyle()
+        self.attributes('-fullscreen', False)
         self.args = style.getCustomValues()
-        
         w, h = self.winfo_screenwidth(), self.winfo_screenheight()
         self.geometry("%dx%d+0+0" % (w*0.995, h*.87))
         self.config(bg=self.args['bgcolor1'])
 #        self.overrideredirect(1)
         self.title('kunnekted-jurnl')
+
         self.storage = Storage()
         self.args['homepath'] = self.storage.getPath()
         iconpath = join(self.args['homepath'], 'Resources\\web.ico')
@@ -43,6 +43,9 @@ class Main(tk.Tk):
         self.backup_interval_var = self.storage.getBackupIntervalVar()
         self.journal_auto_save = self.storage.getAutosaveVar()
         self.last_backup_var = self.storage.getLastBackupVar()
+        self.fullscreen_var = self.storage.get_fullscreen_var()
+
+        self.short_message_var = tk.StringVar(name='Message', value='')
         
         """Frame 1"""
         frame1 = ttk.Frame(self)
@@ -53,8 +56,13 @@ class Main(tk.Tk):
         self.LAST_BACKUP_LABEL = ttk.Label(frame1_3, text='Last Backup: ')
         self.LAST_BACKUP = ttk.Label(frame1_3, 
                                      textvariable=self.last_backup_var)
-        self.LAST_BACKUP.pack(side='right', padx=3)
-        self.LAST_BACKUP_LABEL.pack(side='right')
+        self.MESSAGE = ttk.Label(frame1_3, textvariable=self.short_message_var)
+        # self.LAST_BACKUP.pack(side='right', padx=3)
+        # self.LAST_BACKUP_LABEL.pack(side='right')
+        # self.MESSAGE.pack(side='bottom')
+        self.LAST_BACKUP.grid(row=0, column=1)
+        self.LAST_BACKUP_LABEL.grid(row=0, column=0)
+        self.MESSAGE.grid(row=1, column=1, sticky='se')
         frame1_1.grid(row=0, column=0, sticky='w')
         self.date_frame.grid(row=1, column=0, padx=self.args['padx'], sticky='w')
         frame1_3.grid(row=0, column=2)
@@ -124,6 +132,7 @@ class Main(tk.Tk):
         theme_menu.add_command(label='Dark Theme', command=style.setNightStyle)
 #        app_menu.add_cascade(label='App Preferences', menu=app_pref_menu)
         app_menu.add_cascade(label='Theme', menu=theme_menu)
+        app_menu.add_command(label='Toggle Fullscreen', command=self.toggle_full_screen)
         pref_menu = tk.Menu(journal_menu, bg=self.args['bgcolor1'], 
                             fg=self.args['textcolor1'], tearoff=0, 
                             selectcolor=self.args['arrow'])
@@ -168,7 +177,6 @@ class Main(tk.Tk):
         pref_menu.add_cascade(label='Backup Options', menu=backup_menu)
         pref_menu.add_command(label="Change Imports Directory", 
                               command=self.storage.changeImportsDirectory)
-        
 
         help_menu = tk.Menu(menubar, bg=self.args['bgcolor1'], fg=self.args['textcolor1'], 
                             tearoff=0, selectcolor=self.args['arrow'])
@@ -192,6 +200,8 @@ class Main(tk.Tk):
         if self.storage.getFirstTimeVar().get():
             self.createWelcomeWindow()
             self.storage.changeFirstTimeFlag()
+        if self.fullscreen_var.get():
+            self.attributes('-fullscreen', True)
             
     def createWelcomeWindow(self):
         self.createWindow('Welcome!', self.messages.split('<Welcome>')[1], 
@@ -233,8 +243,17 @@ class Main(tk.Tk):
             self.save()
         self.attachmanager.clean()
         self.storage.saveJournal(self.journal)
-        self.storage.saveIniFile()
+        self.storage.save_ini_file()
         self.destroy()
+
+    def toggle_full_screen(self):
+        v = self.attributes('-fullscreen')
+        if v:
+            v = False
+        else:
+            v = True
+        self.attributes('-fullscreen', v)
+        self.storage.change_fullscreen_flag(v)
 
     def changeAutoSavePref(self):
         self.storage.toggleAutoSave()
@@ -269,6 +288,9 @@ class Main(tk.Tk):
         self.attachmanager.clearGUI(self.entry)
         self.jgraph.clearGUI(self.entry)
         self.body_frame.grabFocus()
+
+    def clear_short_message(self):
+        self.short_message_var.set('')
         
     def bindDateControl(self):
         self.date_frame.bindDatebox(self.updateGUI)
@@ -284,6 +306,8 @@ class Main(tk.Tk):
             parent.linkChild(self.entry.getDate())
             self.jgraph.updateGUI(self.entry)
         self.journal.add(self.entry)
+        self.short_message_var.set('Saved')
+        self.after(3500, self.clear_short_message)
         
     def writeToDatabase(self):
         self.save()

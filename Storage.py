@@ -15,9 +15,9 @@ from os.path import dirname
 from os.path import join
 from os import mkdir
 from os import remove
-from os import rmdir
+# from os import rmdir
 from os import listdir
-from os import makedirs
+# from os import makedirs
 from shutil import move
 from shutil import copy
 from shutil import make_archive
@@ -28,7 +28,7 @@ from tkinter import StringVar
 import DateTools
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
-from tkinter.messagebox import askyesnocancel
+# from tkinter.messagebox import askyesnocancel
 import JObject
 import sys
 
@@ -39,28 +39,26 @@ class Storage:
         self.BACKUP_INTERVAL = 168  # 24, 72, 168, -1
         self.AUTOSAVE = False
         self.FIRST_TIME = True
+        self.FULLSCREEN = False
         self.getWorkingDir()
 
         self.journal = None
         self.master = master
         self.auto_save = BooleanVar(master=self.master, name='Autosave',
                                     value=self.AUTOSAVE)
-        self.backup_interval = IntVar(master=self.master,
-                                      name='Backup Interval',
-                                      value=self.BACKUP_INTERVAL)
-        self.last_backup = StringVar(master=self.master, name='Last Backup',
-                                     value=self.LAST_BACKUP)
-        self.first_time = BooleanVar(self.master, name='First Time Use Flag',
-                                     value=self.FIRST_TIME)
+        self.backup_interval = IntVar(master=self.master, name='Backup Interval', value=self.BACKUP_INTERVAL)
+        self.last_backup = StringVar(master=self.master, name='Last Backup', value=self.LAST_BACKUP)
+        self.first_time = BooleanVar(self.master, name='First Time Use Flag', value=self.FIRST_TIME)
+        self.fullscreen = BooleanVar(master=self.master, name='Fullscreen Flag', value=self.FULLSCREEN)
 
         #        self.createImportsDirectory()
-        self.LoadIniFile()
+        self.load_ini_file()
         self.createResourceFolder()
         self.openJournalFile()
         self.checkImports()
         self.runBackup()
 
-    def LoadIniFile(self):
+    def load_ini_file(self):
         try:
             fin = open(join(self.HOME, "Journal.ini"), "rb")
             ini_file = pickle.load(fin)
@@ -78,21 +76,26 @@ class Storage:
             try:
                 self.first_time.set(ini_file['FIRST TIME'])
                 self.FIRST_TIME = ini_file['FIRST TIME']
+                self.fullscreen.set(ini_file['FULLSCREEN'])
+                self.FULLSCREEN = ini_file['FULLSCREEN']
             except KeyError:
                 self.FIRST_TIME = True
                 self.first_time.set(True)
+                self.FULLSCREEN = False
+                self.fullscreen.set(False)
         except FileNotFoundError:
             self.changeSaveDirectory()
             fin = open(join(self.HOME, "Journal.ini"), "wb")
         fin.close()
 
-    def saveIniFile(self):
+    def save_ini_file(self):
         ini_file = {'SAVE LOCATION': self.SAVE, 'BACKUP LOCATION': self.BACKUP,
                     'IMPORTS LOCATION': self.IMPORTS,
                     'LAST BACKUP': self.LAST_BACKUP,
                     'BACKUP INTERVAL': self.BACKUP_INTERVAL,
                     'AUTOSAVE': self.AUTOSAVE,
-                    'FIRST TIME': self.FIRST_TIME}
+                    'FIRST TIME': self.FIRST_TIME,
+                    'FULLSCREEN': self.FULLSCREEN}
         fout = open(join(self.HOME, 'Journal.ini'), 'wb')
         pickle.dump(ini_file, fout)
         fout.close()
@@ -128,7 +131,7 @@ class Storage:
                         move(join(old, 'journal_db'), self.SAVE)
                     else:
                         self.saveJournal(self.journal)
-            self.saveIniFile()
+            self.save_ini_file()
 
     def changeBackupDirectory(self):
         self.backup_opt = options = {}
@@ -148,7 +151,7 @@ class Storage:
                     move(old, self.BACKUP)
                 else:
                     mkdir(self.BACKUP)
-            self.saveIniFile()
+            self.save_ini_file()
 
     def changeImportsDirectory(self):
         self.backup_opt = options = {}
@@ -169,7 +172,7 @@ class Storage:
                     move(old, self.IMPORTS)
                 else:
                     mkdir(self.IMPORTS)
-            self.saveIniFile()
+            self.save_ini_file()
 
     def changeBackupSchedule(self):
         self.BACKUP_INTERVAL = self.backup_interval.get()
@@ -184,6 +187,10 @@ class Storage:
     def changeFirstTimeFlag(self):
         self.first_time.set(False)
         self.FIRST_TIME = False
+
+    def change_fullscreen_flag(self, value=None):
+        self.fullscreen.set(value)
+        self.FULLSCREEN = value
 
     def backupDatabase(self):
         """Backs up the database held by the storage object(not the one
@@ -241,6 +248,8 @@ class Storage:
     def getBackupDirectory(self):
         return self.BACKUP
 
+    # TODO: bundle all of the "get var" functions below into a single function to be called by the GUI
+
     def getAutosaveVar(self):
         return self.auto_save
 
@@ -252,6 +261,9 @@ class Storage:
 
     def getFirstTimeVar(self):
         return self.first_time
+
+    def get_fullscreen_var(self):
+        return self.fullscreen
 
     def getJournal(self):
         return self.journal.__deepcopy__()
